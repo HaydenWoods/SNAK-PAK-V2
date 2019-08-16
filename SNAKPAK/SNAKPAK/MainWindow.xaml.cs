@@ -1,39 +1,80 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
+using System.Windows.Shapes;
+using System.Windows.Markup;
+using System.Xml;
+using System.IO;
+using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Diagnostics;
 
 namespace SNAKPAK {
     public partial class MainWindow : Window {
+        void createComputers(int count) {
+            Nullable<Point> dragStart = null;
 
-        private bool _isDown;
-        private bool _isDragging;
-        private Canvas canvas;
-        private UIElement _originalElement;
-        private double _originalLeft;
-        private double _originalTop;
-        private Point _startPoint;
+            MouseButtonEventHandler mouseDown = (mouseSender, args) => {
+                var element = (UIElement)mouseSender;
+                dragStart = args.GetPosition(element);
+                element.CaptureMouse();
+            };
+            MouseButtonEventHandler mouseUp = (mouseSender, args) => {
+                var element = (UIElement)mouseSender;
+                dragStart = null;
+                element.ReleaseMouseCapture();
+            };
+            MouseEventHandler mouseMove = (mouseSender, args) => {
+                if (dragStart != null && args.LeftButton == MouseButtonState.Pressed)
+                {
+                    var element = (UIElement)mouseSender;
+                    var p2 = args.GetPosition(computerCanvas);
+                    
+                    if ((p2.X - dragStart.Value.X) > 0 && (p2.X + dragStart.Value.X) < computerCanvas.ActualWidth)
+                    {
+                        Canvas.SetLeft(element, p2.X - dragStart.Value.X);
+                    }
+                    if ((p2.Y - dragStart.Value.Y) > 0 && (p2.Y + dragStart.Value.Y) < computerCanvas.ActualHeight)
+                    {
+                        Canvas.SetTop(element, p2.Y - dragStart.Value.Y);
+                    }
+                }
+            };
+            Action<UIElement> enableDrag = (element) => {
+                element.PreviewMouseDown += mouseDown;
+                element.PreviewMouseMove += mouseMove;
+                element.PreviewMouseUp += mouseUp;
+            };
 
-        void OnPageLoad(object sender, RoutedEventArgs e)
-        {
-            Debug.WriteLine("hi");
-            canvas = new Canvas();
+            //Creates the computer boxes on the screen
+            /*
+            <Buttons>
+                <Rectangle>
 
-            var computer = new Rectangle();
-            computer.Height = 60;
-            computer.Width = 140;
-            computer.Fill = Brushes.Black;
+                </Rectangle>
+            </Button>
+            */
+            for (int i = 0; i < count; i++) {
+                Button newComputer = new Button();
+                newComputer.Name = "Computer" + i.ToString();
+                newComputer.BorderThickness = new Thickness(0);
+                Canvas.SetTop(newComputer, 0);
+                Canvas.SetLeft(newComputer, (140 * i));
 
-            Canvas.SetTop(computer, 20);
-            Canvas.SetLeft(computer, 20);
+                Rectangle display = new Rectangle();
+                display.Width = 120;
+                display.Height = 50;
+                display.Fill = Brushes.Black;
 
-            canvas.Children.Add(computer);
+                newComputer.Content = display;
 
-            computerGrid.Children.Add(canvas);
+                enableDrag(newComputer);
+                computerCanvas.Children.Add(newComputer);
+            }
+        }
+
+        void OnPageLoad(object sender, RoutedEventArgs e) {
+            createComputers(20);
         }
     }
 }

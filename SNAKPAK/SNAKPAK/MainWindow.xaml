@@ -217,25 +217,27 @@
         </Style>
     </Window.Resources>
     <Grid>
-        <TabControl>
+        <TabControl Background="White">
             <TabItem Header="Main">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="8*"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="250"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
 
                     <!-- Computer View -->
-                    <Grid Name="computerGrid">
-                        
+                    <Grid Name="computerGrid" Grid.ColumnSpan="2">
+                        <Canvas Name="computerCanvas"/>
                     </Grid>
 
                     <!-- Controls -->
-                    <Border Padding="10" Grid.Column="1" BorderThickness="1,0,0,0" BorderBrush="DarkGray">
+                    <Border Padding="10" Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="DarkGray" Background="White">
                         <StackPanel>
                             <TextBlock Text="Controls" FontSize="20" TextAlignment="Left"></TextBlock>
                             <StackPanel Margin="0,10,0,0">
-                                <Button Content="Test"></Button>
+                                <Button Content="Test" Margin="0,0,0,5"></Button>
+                                <Button Content="Test" Margin="0,0,0,5"></Button>
+                                <Button Content="Test" Margin="0,0,0,5"></Button>
                             </StackPanel>
                         </StackPanel>
                     </Border>
