@@ -25,22 +25,20 @@ namespace SNAKPAK {
                 Properties.Settings.Default.SnapToGrid = true;
             }
         };
-        readonly TextChangedEventHandler ChangeSnapAmount = (sender, args) => {
-            var element = (TextBox)sender;
-            if (int.TryParse(element.Text, out int n)) {
-                Properties.Settings.Default.SnapAmount = n;
-            }
+        readonly RoutedPropertyChangedEventHandler<double> ChangeSnapAmount = (sender, args) => {
+            var element = (Slider)sender;
+            Properties.Settings.Default.SnapAmount = (int)element.Value;
         };
 
         //Settings Setup
         void SettingsBindings() {
             SnapToGrid.Checked += ToggleSnapToGrid;
             SnapToGrid.Unchecked += ToggleSnapToGrid;
-            SnapAmount.TextChanged += ChangeSnapAmount;
+            SnapAmount.ValueChanged += ChangeSnapAmount;
         }
         void SettingsDefaults() {
             SnapToGrid.IsChecked = Properties.Settings.Default.SnapToGrid;
-            SnapAmount.Text = Properties.Settings.Default.SnapAmount.ToString();
+            SnapAmount.Value = Properties.Settings.Default.SnapAmount;
 
             SettingsBindings();
         }
@@ -91,11 +89,12 @@ namespace SNAKPAK {
                     }
                 }
             };
+
             //Sets the bindings for the mouse movements
             Action<UIElement> enableDrag = (element) => {
-                element.PreviewMouseDown += mouseDown;
+                element.PreviewMouseLeftButtonDown += mouseDown;
                 element.PreviewMouseMove += mouseMove;
-                element.PreviewMouseUp += mouseUp;
+                element.PreviewMouseLeftButtonUp += mouseUp;
             };
 
             //Creates the computer boxes on the screen
@@ -106,6 +105,14 @@ namespace SNAKPAK {
                 newComputer.Style = Resources["TransparentStyle"] as Style;
 
                 Grid grid = new Grid();
+
+                ContextMenu contextMenu = new ContextMenu();
+                
+                for (int j = 0; j < 5; j++) {
+                    MenuItem menuItem = new MenuItem();
+                    menuItem.Header = "Test";
+                    contextMenu.Items.Add(menuItem);
+                }
 
                 Rectangle display = new Rectangle();
                 display.Width = 100;
@@ -125,7 +132,9 @@ namespace SNAKPAK {
 
                 grid.Children.Add(display);
                 grid.Children.Add(border);
+
                 newComputer.Content = grid;
+                newComputer.ContextMenu = contextMenu;
 
                 enableDrag(newComputer);
                 computerCanvas.Children.Add(newComputer);
