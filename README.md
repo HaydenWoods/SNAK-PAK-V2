@@ -2,7 +2,7 @@
 By Hayden Woods
 
 ## Task List
-- [ ] Create basic forms layout
+- [X] Create basic forms layout
 - [ ] Add computers from a list 
 - [ ] Drag around computers into a desired layout
 - [ ] Save the list of computers and layout
