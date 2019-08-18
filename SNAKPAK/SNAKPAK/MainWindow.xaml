@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SNAKPAK"
         mc:Ignorable="d"
-        Title="SNAKPAK" Height="500" Width="1000" 
+        Title="SNAKPAK" 
+        Height="500" Width="1000"  
+        MinHeight="500" MinWidth="1000"
         Loaded="OnPageLoad">
     <Window.Resources>
         <Style x:Key="FocusVisual">
@@ -13,6 +15,17 @@
                 <Setter.Value>
                     <ControlTemplate>
                         <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="TransparentStyle" TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter/>
+                        </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -218,7 +231,7 @@
     </Window.Resources>
     <Grid>
         <TabControl Background="White">
-            <TabItem Header="Main">
+            <TabItem Header="Network">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
@@ -226,12 +239,12 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Computer View -->
-                    <Grid Name="computerGrid" Grid.ColumnSpan="2">
-                        <Canvas Name="computerCanvas"/>
+                    <Grid Name="computerGrid" Margin="0,0,0,0" ShowGridLines="True">
+                        <Canvas Name="computerCanvas" Background="#c4aee8"/>
                     </Grid>
 
                     <!-- Controls -->
-                    <Border Padding="10" Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="DarkGray" Background="White">
+                    <Border Padding="10" Grid.Column="2" Background="White">
                         <StackPanel>
                             <TextBlock Text="Controls" FontSize="20" TextAlignment="Left"></TextBlock>
                             <StackPanel Margin="0,10,0,0">
@@ -243,9 +256,27 @@
                     </Border>
                 </Grid>
             </TabItem>
-            <TabItem Header="Settings">
+
+            <TabItem Header="Preferences">
+                <Border Padding="10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                            <TextBlock FlowDirection="LeftToRight" Text="Snap To Grid" Width="100"  Padding="0,0,10,0"/>
+                            <CheckBox Name="SnapToGrid" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBlock Text="Snap Amount" HorizontalAlignment="Left" Width="100" Padding="0,0,10,0"/>
+                            <TextBox Name="SnapAmount" Width="100" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+
+            <TabItem Header="Advanced">
 
             </TabItem>
+            
         </TabControl>
     </Grid>
 </Window>
