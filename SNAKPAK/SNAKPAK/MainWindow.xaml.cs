@@ -8,6 +8,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.DirectoryServices;
+using System.Net;
 
 namespace SNAKPAK {
     public static class ExtensionMethods {
@@ -143,6 +145,20 @@ namespace SNAKPAK {
 
         void OnPageLoad(object sender, RoutedEventArgs e) {
             SettingsDefaults();
+            DirectoryEntry root = new DirectoryEntry("WinNT:");
+            foreach (DirectoryEntry computers in root.Children) {
+                foreach (DirectoryEntry computer in computers.Children) {
+                    if (computer.SchemaClassName == "Computer") {
+                        var ipadd = Dns.GetHostAddresses(computer.Name);
+                        try {
+                            ComputerLog.Text += "\n" + computer.Name + ": " + ipadd[1];
+                        } catch {
+                            ComputerLog.Text += "\n" + computer.Name + ": " + ipadd[0];
+                        }
+                        
+                    }  
+                }
+            }
             CreateComputers(20);
         }
     }

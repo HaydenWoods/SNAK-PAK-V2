@@ -235,18 +235,25 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="250"></ColumnDefinition>
+                        <ColumnDefinition Width="300"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
 
                     <!-- Computer View -->
-                    <Grid Name="computerGrid" Margin="0,0,0,0">
+                    <Grid Name="computerGrid" Grid.Column="0" Margin="0,0,0,0">
                         <Canvas Name="computerCanvas" Background="#c4aee8"/>
                     </Grid>
 
                     <!-- Controls -->
-                    <StackPanel Grid.Column="1">
-                        
-                    </StackPanel>
+                    <TabControl Grid.Column="1" BorderThickness="1,1,0,0">
+                        <TabItem Header="Log">
+                            <TextBlock Name="ComputerLog">
+                                
+                            </TextBlock>
+                        </TabItem>
+                        <TabItem Header="Other">
+
+                        </TabItem>
+                    </TabControl>
                 </Grid>
             </TabItem>
 
