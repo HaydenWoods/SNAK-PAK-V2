@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message View {
+	string viewName = 1;
+	repeated View subviews = 2;
+
+	message Computer {
+		string computerName = 1;
+	}
+
+	repeated Computer computers = 3;
+}

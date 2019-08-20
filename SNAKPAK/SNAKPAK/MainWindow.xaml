@@ -234,26 +234,39 @@
             <TabItem Header="Network">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="300"></ColumnDefinition>
+                        <ColumnDefinition Width="7*"></ColumnDefinition>
+                        <ColumnDefinition Width="3*" MinWidth="300" MaxWidth="600"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
 
                     <!-- Computer View -->
                     <Grid Name="computerGrid" Grid.Column="0" Margin="0,0,0,0">
-                        <Canvas Name="computerCanvas" Background="#c4aee8"/>
+                        <Canvas Name="computerCanvas" Background="#c4aee8" x:FieldModifier="public"/>
                     </Grid>
 
-                    <!-- Controls -->
-                    <TabControl Grid.Column="1" BorderThickness="1,1,0,0">
-                        <TabItem Header="Log">
-                            <TextBlock Name="ComputerLog">
+                    <Grid Name="rightBar" Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+
+                        <Border Padding="10,10,10,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Search" Padding="0,0,10,0" Grid.Column="0"></TextBlock>
+                                <TextBox Height="20" Grid.Column="1" ></TextBox>
+                            </Grid>
+                        </Border>
+
+                        <Border Padding="10,10,10,10" Grid.Row="1">
+                            <TextBlock Name="output">
                                 
                             </TextBlock>
-                        </TabItem>
-                        <TabItem Header="Other">
-
-                        </TabItem>
-                    </TabControl>
+                        </Border>
+                        
+                    </Grid>
                 </Grid>
             </TabItem>
 

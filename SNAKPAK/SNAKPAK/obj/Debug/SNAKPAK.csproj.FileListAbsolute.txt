@@ -43,3 +43,14 @@ C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.csproj.Gener
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.csproj.CoreCompileInputs.cache
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.exe
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.pdb
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.Protobuf.dll
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.ProtocolBuffers.dll
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.ProtocolBuffers.Serialization.dll
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\protobuf-net.dll
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.Protobuf.pdb
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.Protobuf.xml
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.ProtocolBuffers.xml
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.ProtocolBuffers.Serialization.xml
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\protobuf-net.pdb
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\protobuf-net.xml
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.csproj.CopyComplete
