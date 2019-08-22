@@ -54,3 +54,5 @@ C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\Google.ProtocolBuffe
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\protobuf-net.pdb
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\protobuf-net.xml
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.csproj.CopyComplete
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\Preferences.g.cs
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\Preferences.baml
