@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SNAKPAK"
         mc:Ignorable="d"
         Title="SNAKPAK" 
-        Height="700" Width="1250"  
+        Height="800" Width="1400"  
         MinHeight="500" MinWidth="1000"
         Loaded="OnPageLoad">
     <Window.Resources>
@@ -240,9 +240,10 @@
         <Grid Grid.Row="0">
             <Menu Grid.Row="0" Width="Auto" Background="#303030" Foreground="White" DockPanel.Dock="Top" Panel.ZIndex="1" VerticalAlignment="Top" BorderThickness="0">
                 <MenuItem Header="_File" HorizontalAlignment="Center" Height="20" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0">
-                    <MenuItem Header="Open" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
-                    <MenuItem Header="Save" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
-                    <MenuItem Header="Save As" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
+                    <MenuItem Name="Open" Header="Open" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0" Click="MenuItem_Click"/>
+                    <MenuItem Name="Save" Header="Save" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
+                    <MenuItem Name="SaveAs" Header="Save As" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
+                    <MenuItem Name="Close" Header="Close" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
                 </MenuItem>
                 <MenuItem  Header="_Edit" HorizontalAlignment="Center" Height="20">
                     
@@ -256,8 +257,8 @@
         <!-- Content Grid -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" MinWidth="300" MaxWidth="600"></ColumnDefinition>
-                <ColumnDefinition Width="7*"></ColumnDefinition>
+                <ColumnDefinition Width="450"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
             <!-- Left Column -->
@@ -287,8 +288,9 @@
 
             <!-- Canvas Grid -->
             <Grid x:Name="computerGrid" Grid.Column="1">
-                <TextBlock x:Name="currentViewName" Height="50" IsHitTestVisible="False" VerticalAlignment="Top" Text="CurrentViewName" FontSize="24" Foreground="White" Panel.ZIndex="1" TextAlignment="Center" Padding="0,10,0,0"></TextBlock>
-                <Canvas x:Name="computerCanvas" Background="#474747" x:FieldModifier="public"/>
+                <Rectangle Fill="#474747" Panel.ZIndex="0"></Rectangle>
+                <TextBlock x:Name="Title" Height="50" IsHitTestVisible="False" VerticalAlignment="Top" Text="CurrentViewName" FontSize="24" Foreground="White" Panel.ZIndex="0" TextAlignment="Center" Padding="0,10,0,0"></TextBlock>
+                <Canvas x:Name="ViewCanvas" x:FieldModifier="public" Panel.ZIndex="1"/>
             </Grid>
         </Grid>
     </Grid>

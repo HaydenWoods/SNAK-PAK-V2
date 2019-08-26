@@ -12,8 +12,48 @@ using System.Collections;
 using System.IO;
 using Google.Protobuf;
 using static View.Types;
+using Microsoft.Win32;
 
 namespace SNAKPAK {
+    public static class ExtensionMethods {
+        public static int RoundOff(int num, int snap) {
+            return (int)((int)Math.Round(num / (double)snap) * snap);
+        }
+        public static void GenerateRandomViews(View parentView, int recursions, int maxRecursions) {
+            Random r = new Random();
+
+            for (int i = 0; i < r.Next(1, 6); i++) {
+                View subView = new View();
+                subView.ViewName = parentView.ViewName + " - SubView(" + i + ")";
+
+                for (int j = 0; j < r.Next(1, 10); j++) {
+                    Computer computer = new Computer();
+                    computer.ComputerName = subView.ViewName + " - Computer (" + j + ")";
+                    subView.Computers.Add(computer);
+                }
+
+                parentView.Subviews.Add(subView);
+
+                recursions = recursions + 1;
+                if (recursions < maxRecursions) {
+                    GenerateRandomViews(subView, recursions, maxRecursions);
+                }
+            }
+        }
+        public static void GenerateRandomFile(string fileName) {
+            Random r = new Random();
+            View masterView = new View();
+            masterView.ViewName = "Master View";
+
+            GenerateRandomViews(masterView, 0, r.Next(3, 10));
+
+            using (var output = File.Create("test.snak")) {
+                masterView.WriteTo(output);
+            }
+        }
+    }
+
+
     /*
       __  __          _____ _   _  __          _______ _   _ _____   ______          __
      |  \/  |   /\   |_   _| \ | | \ \        / |_   _| \ | |  __ \ / __ \ \        / /
@@ -23,105 +63,146 @@ namespace SNAKPAK {
      |_|  |_/_/    \_|_____|_| \_|     \/  \/   |_____|_| \_|_____/ \____/   \/  \/                                                                             
     */
     public partial class MainWindow : Window {
-        public ViewUIElement masterView;
-        
-        public static class ExtensionMethods {
-            public static int RoundOff(int num, int snap) {
-                return (int)((int)Math.Round(num / (double)snap) * snap);
+        public ViewUI MasterView;
+
+        public ViewUI CurrentView {
+            get {
+                return _CurrentView;
             }
-            public static void GenerateRandomViews(View parentView, int recursions, int maxRecursions) {
-                Random r = new Random();
-
-                for (int j = 0; j < r.Next(1, 10); j++) {
-                    Computer computer = new Computer();
-                    computer.ComputerName = parentView.ViewName + " - Computer (" + j + ")";
-                    parentView.Computers.Add(computer);
-                }
-
-                for (int i = 0; i < r.Next(1, 4); i++) {
-                    View subView = new View();
-                    subView.ViewName = parentView.ViewName + " - SubView(" + i + ")";
-
-                    parentView.Subviews.Add(subView);
-
-                    recursions = recursions + 1;
-                    if ( recursions < maxRecursions) {
-                        GenerateRandomViews(subView, recursions, maxRecursions);
-                    }
-                }
-            }
-            public static void GenerateRandomFile(string fileName) {
-                Random r = new Random();
-                View masterView = new View();
-                masterView.ViewName = "Master View";
-
-                GenerateRandomViews(masterView, 0, r.Next(3,10));
-
-                using (var output = File.Create("test.snak")) {
-                    masterView.WriteTo(output);
+            set {
+                _CurrentView = value;
+                if (_CurrentView != null) {
+                    DrawCanvas();
                 }
             }
         }
+        private ViewUI _CurrentView;
 
-        public class Item {
-            public Button Display;
+        public static MainWindow mw;
 
-            static Nullable<Point> dragStart = null;
-            static readonly MainWindow mw = (MainWindow)Application.Current.MainWindow;
+        /*
+          _____          _   ___      __      _____   ______ _      ______ __  __ ______ _   _ _______ 
+         / ____|   /\   | \ | \ \    / /\    / ____| |  ____| |    |  ____|  \/  |  ____| \ | |__   __|
+        | |       /  \  |  \| |\ \  / /  \  | (___   | |__  | |    | |__  | \  / | |__  |  \| |  | |   
+        | |      / /\ \ | . ` | \ \/ / /\ \  \___ \  |  __| | |    |  __| | |\/| |  __| | . ` |  | |   
+        | |____ / ____ \| |\  |  \  / ____ \ ____) | | |____| |____| |____| |  | | |____| |\  |  | |   
+         \_____/_/    \_|_| \_|   \/_/    \_|_____/  |______|______|______|_|  |_|______|_| \_|  |_|                                                                                                
+        */
+        public class CanvasElement {
+            public int id;
+            public string name;   
+        }
 
-            //Left mouse down
-            static MouseButtonEventHandler mouseDown = (mouseSender, args) => {
-                var element = (FrameworkElement)mouseSender;
+        /*
+          _____ ____  __  __ _____  _    _ _______ ______ _____    _    _ _____ 
+         / ____/ __ \|  \/  |  __ \| |  | |__   __|  ____|  __ \  | |  | |_   _|
+        | |   | |  | | \  / | |__) | |  | |  | |  | |__  | |__) | | |  | | | |  
+        | |   | |  | | |\/| |  ___/| |  | |  | |  |  __| |  _  /  | |  | | | |  
+        | |___| |__| | |  | | |    | |__| |  | |  | |____| | \ \  | |__| |_| |_ 
+         \_____\____/|_|  |_|_|     \____/   |_|  |______|_|  \_\  \____/|_____|                                                               
+        */
+        public class ComputerUI : CanvasElement {
+            public ComputerUI(Computer computer) {
+                name = computer.ComputerName;
+            }
+        }
+
+
+        /*
+        __      _______ ________          __  _    _ _____ 
+        \ \    / |_   _|  ____\ \        / / | |  | |_   _|
+         \ \  / /  | | | |__   \ \  /\  / /  | |  | | | |  
+          \ \/ /   | | |  __|   \ \/  \/ /   | |  | | | |  
+           \  /   _| |_| |____   \  /\  /    | |__| |_| |_ 
+            \/   |_____|______|   \/  \/      \____/|_____|                                              
+        */
+        public class ViewUI : CanvasElement {
+            public List<Object> children = new List<Object>();
+            
+            //Called on object construction
+            public void LoadSubViews(View parentView) {
+                for (int i = 0; i < parentView.Subviews.Count; i++) {
+                    ViewUI subView = new ViewUI(parentView.Subviews[i]);
+                    children.Add(subView);
+                }
+                for (int i = 0; i < parentView.Computers.Count; i++) {
+                    ComputerUI computer = new ComputerUI(parentView.Computers[i]);
+                    children.Add(computer);
+                }
+            }
+
+            public ViewUI(View parentView) {
+                name = parentView.ViewName;
+                LoadSubViews(parentView);
+            }
+        }
+
+        public static Nullable<Point> dragStart = null;
+        new void MouseDown(object mouseSender, MouseButtonEventArgs args) {
+            var element = (FrameworkElement)mouseSender;
+            if (args.ClickCount == 2) {
+                for (int i = 0; i < CurrentView.children.Count; i++) {
+                    if (CurrentView.children[i].GetType() == typeof(ViewUI)) {
+                        ViewUI child = (ViewUI)CurrentView.children[i];
+                        if (child.id == element.GetHashCode()) {
+                            CurrentView = child;
+                        }
+                    }      
+                }
+            } else {
                 dragStart = args.GetPosition(element);
                 element.CaptureMouse();
-            };
-            //Left mouse up
-            static MouseButtonEventHandler mouseUp = (mouseSender, args) => {
-                var element = (FrameworkElement)mouseSender;
-                dragStart = null;
-                element.ReleaseMouseCapture();
-            };
-            //On mouse move
-            static MouseEventHandler mouseMove = (mouseSender, args) => {
-                if (dragStart != null && args.LeftButton == MouseButtonState.Pressed) {
-                    var element = (FrameworkElement)mouseSender;
-                    var p2 = args.GetPosition(mw.computerCanvas);
+            }
+        }
+        new void MouseUp(object mouseSender, MouseButtonEventArgs args) {
+            var element = (FrameworkElement)mouseSender;
+            dragStart = null;
+            element.ReleaseMouseCapture();
+        }
+        new void MouseMove(object mouseSender, MouseEventArgs args) {
+            var element = (FrameworkElement)mouseSender;
+            if (dragStart != null && args.LeftButton == MouseButtonState.Pressed) {
+                var p2 = args.GetPosition(mw.ViewCanvas);
 
-                    if ((p2.X - dragStart.Value.X) > 0 && (p2.X - dragStart.Value.X + element.ActualWidth) < (mw.computerCanvas.ActualWidth)) {
-                        double newX = p2.X - dragStart.Value.X;
-                        if (Properties.Settings.Default.SnapToGrid == true) {
-                            newX = ExtensionMethods.RoundOff((int)newX, Properties.Settings.Default.SnapAmount);
+                if ((p2.X - dragStart.Value.X) > 0 && (p2.X - dragStart.Value.X + element.ActualWidth) < (mw.ViewCanvas.ActualWidth)) {
+                    double newX = p2.X - dragStart.Value.X;
+                    if (Properties.Settings.Default.SnapToGrid == true) {
+                        newX = ExtensionMethods.RoundOff((int)newX, Properties.Settings.Default.SnapAmount);
 
-                            if ((newX + element.ActualWidth) > (mw.computerCanvas.ActualWidth)) {
-                                newX = newX - Properties.Settings.Default.SnapAmount;
-                            }
+                        if ((newX + element.ActualWidth) > (mw.ViewCanvas.ActualWidth)) {
+                            newX = newX - Properties.Settings.Default.SnapAmount;
                         }
-                        Canvas.SetLeft(element, newX);
                     }
-                    if ((p2.Y - dragStart.Value.Y) > 0 && (p2.Y - dragStart.Value.Y + element.ActualHeight) < (mw.computerCanvas.ActualHeight)) {
-                        double newY = p2.Y - dragStart.Value.Y;
-                        if (Properties.Settings.Default.SnapToGrid == true) {
-                            newY = ExtensionMethods.RoundOff((int)newY, Properties.Settings.Default.SnapAmount);
-
-                            if ((newY + element.ActualHeight) > (mw.computerCanvas.ActualHeight)) {
-                                newY = newY - Properties.Settings.Default.SnapAmount;
-                            }
-                        }
-
-                        Canvas.SetTop(element, newY);
-                    }
+                    Canvas.SetLeft(element, newX);
                 }
-            };
-            //Sets the bindings for the mouse movements
-            public static Action<UIElement> enableDrag = (element) => {
-                element.PreviewMouseLeftButtonDown += mouseDown;
-                element.PreviewMouseMove += mouseMove;
-                element.PreviewMouseLeftButtonUp += mouseUp;
-            };
+                if ((p2.Y - dragStart.Value.Y) > 0 && (p2.Y - dragStart.Value.Y + element.ActualHeight) < (mw.ViewCanvas.ActualHeight)) {
+                    double newY = p2.Y - dragStart.Value.Y;
+                    if (Properties.Settings.Default.SnapToGrid == true) {
+                        newY = ExtensionMethods.RoundOff((int)newY, Properties.Settings.Default.SnapAmount);
 
-            public void CreateDisplay(string name) {
-                this.Display = new Button();
-                this.Display.Style = mw.Resources["TransparentStyle"] as Style;
+                        if ((newY + element.ActualHeight) > (mw.ViewCanvas.ActualHeight)) {
+                            newY = newY - Properties.Settings.Default.SnapAmount;
+                        }
+                    }
+
+                    Canvas.SetTop(element, newY);
+                }
+            }
+        }
+        void EnableDrag(UIElement element) {
+            element.PreviewMouseLeftButtonDown += MouseDown;
+            element.PreviewMouseMove += MouseMove;
+            element.PreviewMouseLeftButtonUp += MouseUp;
+        }
+
+        void ClearCanvas() {
+            ViewCanvas.Children.Clear();
+        }
+        void DrawCanvas() {
+            ClearCanvas();
+            for (int i = 0; i < CurrentView.children.Count; i++) {
+                Button Display = new Button();
+                Display.Style = mw.Resources["TransparentStyle"] as Style;
 
                 //Containg grid inside of the button
                 Grid grid = new Grid();
@@ -145,7 +226,17 @@ namespace SNAKPAK {
                 //Text
                 Border border = new Border();
                 TextBlock text = new TextBlock();
-                text.Text = name;
+                if (CurrentView.children[i].GetType() == typeof(ViewUI)) {
+                    ViewUI child = (ViewUI)CurrentView.children[i];
+                    text.Text = child.name;
+                    child.id = Display.GetHashCode();
+                } else if (CurrentView.children[i].GetType() == typeof(ComputerUI)) {
+                    ComputerUI child = (ComputerUI)CurrentView.children[i];
+                    text.Text = child.name;
+                    child.id = Display.GetHashCode();
+                }
+
+
                 text.Width = 120;
                 text.FontSize = 14;
                 text.TextAlignment = TextAlignment.Center;
@@ -157,92 +248,37 @@ namespace SNAKPAK {
                 grid.Children.Add(display);
                 grid.Children.Add(border);
 
-                this.Display.Content = grid;
-                this.Display.ContextMenu = contextMenu;
+                Display.Content = grid;
+                Display.ContextMenu = contextMenu;
 
-                enableDrag(this.Display);
-                mw.computerCanvas.Children.Add(this.Display);
-            }
-
-            public Item(string name) {
-                CreateDisplay(name);
+                EnableDrag(Display);
+                mw.ViewCanvas.Children.Add(Display);
             }
         }
 
-        public class ComputerUIElement {
-            public String Name;
-            public Item Display;
-
-            static readonly MainWindow mw = (MainWindow)Application.Current.MainWindow;
-
-            public ComputerUIElement(Computer computer) {
-                Name = computer.ComputerName;
-            }
-        }
-
-        public class ViewUIElement {
-            public string Name;
-            public Item Display;
-
-            public List<ViewUIElement> SubViews = new List<ViewUIElement>();
-            public List<ComputerUIElement> Computers = new List<ComputerUIElement>();
-
-            static readonly MainWindow mw = (MainWindow)Application.Current.MainWindow;
-
-            public void LoadSubViews(View parentView) {
-                Debug.WriteLine("\nStarting Loading Views for " + parentView.ViewName);
-                if (parentView.Subviews.Count > 0) {
-                    for (int i = 0; i < parentView.Subviews.Count; i++) {
-                        ViewUIElement subView = new ViewUIElement(parentView.Subviews[i]);
-                        Debug.WriteLine("Starting Loading Computers for " + parentView.Subviews[i].ViewName);
-                        for (int j = 0; j < parentView.Subviews[i].Computers.Count; j++) {
-                            ComputerUIElement computer = new ComputerUIElement(parentView.Subviews[i].Computers[j]);
-                            subView.Computers.Add(computer);
-                            Debug.WriteLine("Loaded Computer " + parentView.Subviews[i].Computers[j].ComputerName);
-                        }
-                        Debug.WriteLine("Finished Loading Computers for " + parentView.Subviews[i].ViewName);
-                        SubViews.Add(subView);
-                    }
-                } else {
-                    Debug.WriteLine("Finished Loading Views for " + parentView.ViewName + "\n");
-                }
-            }
-
-            public void DisplayView() {
-                mw.currentViewName.Text = Name;
-                for (int i = 0; i < SubViews.Count; i++) {
-                    SubViews[i].Display = new Item(SubViews[i].Name);
-                }
-                for (int i = 0; i < Computers.Count; i++) {
-                    Computers[i].Display = new Item(Computers[i].Name);
-                }
-            }
-
-            public ViewUIElement(View parentView) {
-                Name = parentView.ViewName;
-                LoadSubViews(parentView);
-            }
-        }
-
-        void LoadFile(string fileName) {
+        View LoadFile(string fileName) {
             View view;
             using (var input = File.OpenRead(fileName)) {
                 view = View.Parser.ParseFrom(input);
             }
-            masterView = new ViewUIElement(view);
-            masterView.SubViews[0].DisplayView();
+            return view;   
         }
-        void SaveFile(string fileName) {
-            /*
-            using (var output = File.Create("test.snak")) {
-                finalView.WriteTo(output);
-            }
-            */
-        }
+        private void MenuItem_Click(object sender, RoutedEventArgs e) {
+            MenuItem source = e.Source as MenuItem;
 
+            //Open File
+            if (source.Name == "Open") {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
+                if (openFileDialog.ShowDialog() == true) {
+                    MasterView = new ViewUI(LoadFile(openFileDialog.FileName));
+                    CurrentView = MasterView;
+                }
+            }
+        }
         void OnPageLoad(object sender, RoutedEventArgs e) {
-            ExtensionMethods.GenerateRandomFile("test.snak");
-            LoadFile("test.snak");       
+            mw = (MainWindow)Application.Current.MainWindow;
+            //ExtensionMethods.GenerateRandomFile("test.snak");    
         }
     }
 }
