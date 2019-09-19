@@ -280,17 +280,30 @@
                 </Border>
 
                 <Border Padding="10,10,10,10" Grid.Row="1">
-                    <TextBlock Name="output">
+                    <ScrollViewer>
+                        <TextBlock Name="ADResults" Foreground="White">
 
-                    </TextBlock>
+                        </TextBlock>
+                    </ScrollViewer>
                 </Border>
             </Grid>
 
             <!-- Canvas Grid -->
             <Grid x:Name="computerGrid" Grid.Column="1">
-                <Rectangle Fill="#474747" Panel.ZIndex="0"></Rectangle>
-                <TextBlock x:Name="Title" Height="50" IsHitTestVisible="False" VerticalAlignment="Top" Text="CurrentViewName" FontSize="24" Foreground="White" Panel.ZIndex="0" TextAlignment="Center" Padding="0,10,0,0"></TextBlock>
-                <Canvas x:Name="ViewCanvas" x:FieldModifier="public" Panel.ZIndex="1"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Background="#474747">
+                    
+                </Grid>
+                
+                <Grid Grid.Row="1">
+                    <Rectangle Fill="#474747" Panel.ZIndex="0"></Rectangle>
+                    <TextBlock x:Name="CurrentViewName" Height="50" IsHitTestVisible="False" VerticalAlignment="Top" Text="CurrentViewName" FontSize="24" Foreground="White" Panel.ZIndex="0" TextAlignment="Center" Padding="0,10,0,0"></TextBlock>
+                    <Canvas x:Name="ViewCanvas" x:FieldModifier="public" Panel.ZIndex="1"/>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

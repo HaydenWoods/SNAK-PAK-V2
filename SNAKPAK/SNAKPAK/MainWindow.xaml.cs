@@ -64,7 +64,6 @@ namespace SNAKPAK {
     */
     public partial class MainWindow : Window {
         public ViewUI MasterView;
-
         public ViewUI CurrentView {
             get {
                 return _CurrentView;
@@ -77,8 +76,8 @@ namespace SNAKPAK {
             }
         }
         private ViewUI _CurrentView;
-
         public static MainWindow mw;
+        public static ActiveDirectory activeDir;
 
         /*
           _____          _   ___      __      _____   ______ _      ______ __  __ ______ _   _ _______ 
@@ -137,6 +136,50 @@ namespace SNAKPAK {
             }
         }
 
+        //Active Directory
+        public class ActiveDirectory {
+            public DirectoryEntry dir;
+
+            public SearchResult SearchDirSingle() {
+                DirectorySearcher search = new DirectorySearcher(dir);
+                search.Filter = "(objectClass=Computer)";
+
+                SearchResult searchResults = search.FindOne();
+                return searchResults;
+            }
+            public SearchResultCollection SearchDirAll() {
+                DirectorySearcher search = new DirectorySearcher(dir);
+                search.Filter = "(objectClass=Computer)";
+
+                SearchResultCollection searchResults = search.FindAll();
+                return searchResults;
+            }
+
+            DirectoryEntry LoadActiveDir() {
+                DirectoryEntry dir = new DirectoryEntry("WinNT:");
+                return dir;
+            }
+
+            public ActiveDirectory() {
+                dir = LoadActiveDir();
+            }
+        }
+        
+        //AD UI
+        public void DisplayADResults(SearchResultCollection searchResults) {
+            for (int i = 0; i < searchResults.Count; i++) {
+                try {
+                    SearchResult searchResult = searchResults[i];
+                    ADResults.Text += searchResult.GetDirectoryEntry().Properties["name"].Value.ToString() + " - ";
+                    ADResults.Text += searchResult.GetDirectoryEntry().Properties["dnshostname"].Value.ToString();
+                    ADResults.Text += "\n";
+                } catch {
+                    Debug.WriteLine("error");
+                }
+            }      
+        }
+
+        //General UI
         public static Nullable<Point> dragStart = null;
         new void MouseDown(object mouseSender, MouseButtonEventArgs args) {
             var element = (FrameworkElement)mouseSender;
@@ -195,11 +238,13 @@ namespace SNAKPAK {
             element.PreviewMouseLeftButtonUp += MouseUp;
         }
 
+        //Canvas 
         void ClearCanvas() {
             ViewCanvas.Children.Clear();
         }
         void DrawCanvas() {
             ClearCanvas();
+            CurrentViewName.Text = CurrentView.name;
             for (int i = 0; i < CurrentView.children.Count; i++) {
                 Button Display = new Button();
                 Display.Style = mw.Resources["TransparentStyle"] as Style;
@@ -236,7 +281,6 @@ namespace SNAKPAK {
                     child.id = Display.GetHashCode();
                 }
 
-
                 text.Width = 120;
                 text.FontSize = 14;
                 text.TextAlignment = TextAlignment.Center;
@@ -256,6 +300,7 @@ namespace SNAKPAK {
             }
         }
 
+        //Menu item functionality
         View LoadFile(string fileName) {
             View view;
             using (var input = File.OpenRead(fileName)) {
@@ -265,19 +310,23 @@ namespace SNAKPAK {
         }
         private void MenuItem_Click(object sender, RoutedEventArgs e) {
             MenuItem source = e.Source as MenuItem;
-
-            //Open File
-            if (source.Name == "Open") {
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
-                if (openFileDialog.ShowDialog() == true) {
-                    MasterView = new ViewUI(LoadFile(openFileDialog.FileName));
-                    CurrentView = MasterView;
-                }
+            switch (source.Name) {
+                case "Open":
+                    OpenFileDialog openFileDialog = new OpenFileDialog();
+                    openFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
+                    if (openFileDialog.ShowDialog() == true) {
+                        MasterView = new ViewUI(LoadFile(openFileDialog.FileName));
+                        CurrentView = MasterView;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
         void OnPageLoad(object sender, RoutedEventArgs e) {
             mw = (MainWindow)Application.Current.MainWindow;
+            activeDir = new ActiveDirectory();
+            DisplayADResults(activeDir.SearchDirAll());
             //ExtensionMethods.GenerateRandomFile("test.snak");    
         }
     }
