@@ -76,6 +76,7 @@ namespace SNAKPAK {
             }
         }
         private ViewUI _CurrentView;
+
         public static MainWindow mw;
         public static ActiveDirectory activeDir;
 
@@ -117,17 +118,37 @@ namespace SNAKPAK {
         */
         public class ViewUI : CanvasElement {
             public List<Object> children = new List<Object>();
+            int subViewsCount;
+            int computerCount;
             
             //Called on object construction
             public void LoadSubViews(View parentView) {
                 for (int i = 0; i < parentView.Subviews.Count; i++) {
                     ViewUI subView = new ViewUI(parentView.Subviews[i]);
                     children.Add(subView);
+                    subViewsCount++;
                 }
                 for (int i = 0; i < parentView.Computers.Count; i++) {
                     ComputerUI computer = new ComputerUI(parentView.Computers[i]);
                     children.Add(computer);
+                    computerCount++;
                 }
+            }
+
+            public View[] SaveSubViews(View parentView) {
+                View[] views = new View[subViewsCount];
+                
+                for (int i = 0; i < children.Count; i++) {
+                    if (children[i].GetType() == typeof(ViewUI)) {
+                        ViewUI child = (ViewUI)children[i];
+
+                        View view = new View();
+                        view.ViewName = name;
+                        view.Subviews.Add(child.SaveSubViews(view));
+                    }
+                }
+
+                return views;
             }
 
             public ViewUI(View parentView) {
@@ -252,14 +273,6 @@ namespace SNAKPAK {
                 //Containg grid inside of the button
                 Grid grid = new Grid();
 
-                //Right click menu
-                ContextMenu contextMenu = new ContextMenu();
-                for (int j = 0; j < 5; j++) {
-                    MenuItem menuItem = new MenuItem();
-                    menuItem.Header = "Test";
-                    contextMenu.Items.Add(menuItem);
-                }
-
                 //Drawn representation of the item
                 Rectangle display = new Rectangle();
                 display.Width = 120;
@@ -271,15 +284,9 @@ namespace SNAKPAK {
                 //Text
                 Border border = new Border();
                 TextBlock text = new TextBlock();
-                if (CurrentView.children[i].GetType() == typeof(ViewUI)) {
-                    ViewUI child = (ViewUI)CurrentView.children[i];
-                    text.Text = child.name;
-                    child.id = Display.GetHashCode();
-                } else if (CurrentView.children[i].GetType() == typeof(ComputerUI)) {
-                    ComputerUI child = (ComputerUI)CurrentView.children[i];
-                    text.Text = child.name;
-                    child.id = Display.GetHashCode();
-                }
+                CanvasElement child = (CanvasElement)CurrentView.children[i];
+                text.Text = child.name;
+                child.id = Display.GetHashCode();
 
                 text.Width = 120;
                 text.FontSize = 14;
@@ -291,6 +298,14 @@ namespace SNAKPAK {
 
                 grid.Children.Add(display);
                 grid.Children.Add(border);
+
+                //Right click menu
+                ContextMenu contextMenu = new ContextMenu();
+                MenuItem menuItem = new MenuItem();
+                menuItem.Header = "Delete";
+                menuItem.DataContext = child.id;
+                menuItem.Click += new RoutedEventHandler(DeleteElement);
+                contextMenu.Items.Add(menuItem);
 
                 Display.Content = grid;
                 Display.ContextMenu = contextMenu;
@@ -306,8 +321,28 @@ namespace SNAKPAK {
             using (var input = File.OpenRead(fileName)) {
                 view = View.Parser.ParseFrom(input);
             }
+            Debug.WriteLine(view);
             return view;   
         }
+
+        void SaveFile(string fileName) {
+            View view = new View();
+            view.ViewName = MasterView.name;
+            view.Subviews.Add(MasterView.SaveSubViews(view));
+        }
+
+        public void DeleteElement(object sender, RoutedEventArgs e) {
+            MenuItem source = e.Source as MenuItem;
+            for (int i = 0; i < CurrentView.children.Count; i++) {
+                CanvasElement child = (CanvasElement)CurrentView.children[i];
+                if (child.id == (int)source.DataContext) {
+                    CurrentView.children.RemoveAt(i);
+                    DrawCanvas();
+                    break;
+                }
+            }
+        }
+
         private void MenuItem_Click(object sender, RoutedEventArgs e) {
             MenuItem source = e.Source as MenuItem;
             switch (source.Name) {
@@ -319,6 +354,13 @@ namespace SNAKPAK {
                         CurrentView = MasterView;
                     }
                     break;
+                case "Save":
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
+                    saveFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
+                    if (saveFileDialog.ShowDialog() == true) {
+                        SaveFile(saveFileDialog.FileName);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -326,8 +368,8 @@ namespace SNAKPAK {
         void OnPageLoad(object sender, RoutedEventArgs e) {
             mw = (MainWindow)Application.Current.MainWindow;
             activeDir = new ActiveDirectory();
-            DisplayADResults(activeDir.SearchDirAll());
-            //ExtensionMethods.GenerateRandomFile("test.snak");    
+            //DisplayADResults(activeDir.SearchDirAll());
+            //ExtensionMethods.GenerateRandomFile("test.snak");   
         }
     }
 }
