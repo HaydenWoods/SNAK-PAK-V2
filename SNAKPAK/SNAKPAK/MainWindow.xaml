@@ -305,12 +305,10 @@
 
                 <Grid Grid.Row="0" Background="#303030">
                     <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal">
-                        <Button Width="100" Height="25" Margin="10,0,5,0" BorderThickness="0">
+                        <Button Width="100" Height="25" Margin="10,0,5,0" BorderThickness="0" Click="CreateUISubview">
                             <TextBlock>Add Subview</TextBlock>
                         </Button>
-                        <Button Width="100" Height="25" Margin="5,0,5,0" BorderThickness="0">
-                            <TextBlock>Add Computer</TextBlock>
-                        </Button>
+                        <TextBox Name="SubViewNameInput" Width="200" Height="25" BorderThickness="0" FontSize="14" Margin="5,0,5,0"></TextBox>
                     </StackPanel>
                 </Grid>
                 

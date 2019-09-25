@@ -13,6 +13,7 @@ using System.IO;
 using Google.Protobuf;
 using static View.Types;
 using Microsoft.Win32;
+using Microsoft.VisualBasic;
 
 namespace SNAKPAK {
     public static class ExtensionMethods {
@@ -161,6 +162,10 @@ namespace SNAKPAK {
                 }
 
                 return views;
+            }
+
+            public ViewUI(string _name) {
+                name = _name;
             }
 
             public ViewUI(View parentView) {
@@ -317,7 +322,7 @@ namespace SNAKPAK {
                 MenuItem menuItem = new MenuItem();
                 menuItem.Header = "Delete";
                 menuItem.DataContext = child.id;
-                menuItem.Click += new RoutedEventHandler(DeleteElement);
+                menuItem.Click += new RoutedEventHandler(DeleteUIElement);
                 contextMenu.Items.Add(menuItem);
 
                 Display.Content = grid;
@@ -329,18 +334,26 @@ namespace SNAKPAK {
         }
 
         //Menu item functionality
+        void NewFile() {
+            if (MasterView == null && CurrentFilePath == null && CurrentView == null) {
+                MasterView = new ViewUI("Master View");
+                CurrentView = MasterView;
+            } else {
+                CloseFile();
+                NewFile();
+            }
+        }
+
         void OpenFile() {
+            CloseFile();
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
-            if (openFileDialog.ShowDialog() == true)
-            {
+            if (openFileDialog.ShowDialog() == true) {
                 MasterView = new ViewUI(LoadFile(openFileDialog.FileName));
                 CurrentView = MasterView;
             }
         }
-
-        View LoadFile(string filepath) {
-            CloseFile();
+        View LoadFile(string filepath) {  
             View view;
             using (var input = File.OpenRead(filepath)) {
                 view = View.Parser.ParseFrom(input);
@@ -350,7 +363,7 @@ namespace SNAKPAK {
         }
 
         void SaveFile(string filename) {
-            if (MasterView != null) {
+            if (MasterView != null && CurrentFilePath != null) {
                 View view = new View();
                 view.ViewName = MasterView.name;
                 view.Subviews.Add(MasterView.SaveSubViews(view));
@@ -358,6 +371,8 @@ namespace SNAKPAK {
                 {
                     view.WriteTo(output);
                 }
+            } else if (CurrentFilePath == null) {
+                SaveFileAs();
             }
         }
 
@@ -367,7 +382,8 @@ namespace SNAKPAK {
                 saveFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
                 if (saveFileDialog.ShowDialog() == true)
                 {
-                    SaveFile(saveFileDialog.FileName);
+                    CurrentFilePath = saveFileDialog.FileName;
+                    SaveFile(CurrentFilePath);
                 }
             }
         }
@@ -377,19 +393,35 @@ namespace SNAKPAK {
                 MessageBoxResult result = MessageBox.Show("Would you like to save changes to the document?", "Save Changes", MessageBoxButton.YesNoCancel);
                 switch (result) {
                     case MessageBoxResult.Yes:
-                        SaveFileAs();
+                        if (CurrentFilePath != null) {
+                            SaveFile(CurrentFilePath);
+                        } else if (CurrentFilePath == null) {
+                            SaveFileAs();
+                        }
                         ClearCanvas();
                         break;
                     case MessageBoxResult.No:
                         ClearCanvas();
                         break;
                     case MessageBoxResult.Cancel:
-                        break;
+                        return;
                 }
+                CurrentFilePath = null;
+                MasterView = null;
+                CurrentView = null;
             }
         }
 
-        public void DeleteElement(object sender, RoutedEventArgs e) {
+        public void CreateUISubview(object sender, RoutedEventArgs e) {
+            if (CurrentView != null && MasterView != null) {
+                string temp = SubViewNameInput.Text;
+                ViewUI view = new ViewUI(temp);
+                CurrentView.children.Add(view);
+                DrawCanvas();
+            }
+        }
+
+        public void DeleteUIElement(object sender, RoutedEventArgs e) {
             MenuItem source = e.Source as MenuItem;
             for (int i = 0; i < CurrentView.children.Count; i++) {
                 CanvasElement child = (CanvasElement)CurrentView.children[i];
@@ -405,6 +437,7 @@ namespace SNAKPAK {
             MenuItem source = e.Source as MenuItem;
             switch (source.Name) {
                 case "New":
+                    NewFile();
                     break;
                 case "Open":
                     OpenFile();
