@@ -70,13 +70,26 @@ namespace SNAKPAK {
                 return _CurrentView;
             }
             set {
+                PreviousView = _CurrentView;
                 _CurrentView = value;
                 if (_CurrentView != null) {
                     DrawCanvas();
+                } else if (_CurrentView == null) {
+                    PreviousView = null;
                 }
             }
         }
         private ViewUI _CurrentView;
+
+        public ViewUI PreviousView {
+            get {
+                return _PreviousView;
+            }
+            set {
+                _PreviousView = value;
+            }
+        }
+        private ViewUI _PreviousView;
 
         public string CurrentFilePath;
 
@@ -412,30 +425,11 @@ namespace SNAKPAK {
             }
         }
 
-        public void CreateUISubview(object sender, RoutedEventArgs e) {
-            if (CurrentView != null && MasterView != null) {
-                string temp = SubViewNameInput.Text;
-                ViewUI view = new ViewUI(temp);
-                CurrentView.children.Add(view);
-                DrawCanvas();
-            }
-        }
-
-        public void DeleteUIElement(object sender, RoutedEventArgs e) {
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
             MenuItem source = e.Source as MenuItem;
-            for (int i = 0; i < CurrentView.children.Count; i++) {
-                CanvasElement child = (CanvasElement)CurrentView.children[i];
-                if (child.id == (int)source.DataContext) {
-                    CurrentView.children.RemoveAt(i);
-                    DrawCanvas();
-                    break;
-                }
-            }
-        }
-
-        private void MenuItem_Click(object sender, RoutedEventArgs e) {
-            MenuItem source = e.Source as MenuItem;
-            switch (source.Name) {
+            switch (source.Name)
+            {
                 case "New":
                     NewFile();
                     break;
@@ -455,6 +449,36 @@ namespace SNAKPAK {
                     break;
             }
         }
+
+        public void CreateUISubview(object sender, RoutedEventArgs e) {
+            if (CurrentView != null && MasterView != null) {
+                string name = SubViewNameInput.Text;
+                if (name != null && name != "") {
+                    ViewUI view = new ViewUI(name);
+                    CurrentView.children.Add(view);
+                    DrawCanvas();
+                }      
+            }
+        }
+
+        public void DeleteUIElement(object sender, RoutedEventArgs e) {
+            MenuItem source = e.Source as MenuItem;
+            for (int i = 0; i < CurrentView.children.Count; i++) {
+                CanvasElement child = (CanvasElement)CurrentView.children[i];
+                if (child.id == (int)source.DataContext) {
+                    CurrentView.children.RemoveAt(i);
+                    DrawCanvas();
+                    return;
+                }
+            }
+        }
+
+        public void PreviousSubview(object sender, RoutedEventArgs e) {
+            CurrentView = PreviousView;
+        }
+
+        
+
         void OnPageLoad(object sender, RoutedEventArgs e) {
             mw = (MainWindow)Application.Current.MainWindow;
             activeDir = new ActiveDirectory();
