@@ -4,8 +4,13 @@ message View {
 	string viewName = 1;
 	repeated View subviews = 2;
 
+	int posX = 3;
+	int posY = 4;
+
 	message Computer {
 		string computerName = 1;
+		int posX = 2;
+		int posY = 3;
 	}
 
 	repeated Computer computers = 3;

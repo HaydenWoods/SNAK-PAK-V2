@@ -239,11 +239,12 @@
         <!-- Top Menu Grid -->
         <Grid Grid.Row="0">
             <Menu Grid.Row="0" Width="Auto" Background="#303030" Foreground="White" DockPanel.Dock="Top" Panel.ZIndex="1" VerticalAlignment="Top" BorderThickness="0">
-                <MenuItem Header="_File" HorizontalAlignment="Center" Height="20" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0">
-                    <MenuItem Name="Open" Header="Open" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0" Click="MenuItem_Click"/>
-                    <MenuItem Name="Save" Header="Save" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0" Click="MenuItem_Click"/>
-                    <MenuItem Name="SaveAs" Header="Save As" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
-                    <MenuItem Name="Close" Header="Close" Background="#303030" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0"/>
+                <MenuItem Header="_File" HorizontalAlignment="Center" Height="20" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0">
+                    <MenuItem Name="New" Header="_New" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Click="MenuItem_Click"/>
+                    <MenuItem Name="Open" Header="_Open" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Click="MenuItem_Click"/>
+                    <MenuItem Name="Save" Header="_Save" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Click="MenuItem_Click"/>
+                    <MenuItem Name="SaveAs" Header="Save As" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Click="MenuItem_Click"/>
+                    <MenuItem Name="Close" Header="_Close" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Click="MenuItem_Click"/>
                 </MenuItem>
                 <MenuItem  Header="_Edit" HorizontalAlignment="Center" Height="20">
                     
@@ -264,14 +265,14 @@
             <!-- Left Column -->
             <Grid Grid.Column="0" Background="#303030">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="50"></RowDefinition>
+                    <RowDefinition Height="40"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <Border Padding="10,0,10,0">
                     <Grid>
-                        <TextBox Width="430" Height="30" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Left" x:Name="SearchTermTextBox" FontSize="16"/>
-                        <TextBlock IsHitTestVisible="False" Text="Search..." VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0" Foreground="DarkGray" FontSize="16">
+                        <TextBox Width="430" Height="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Left" x:Name="SearchTermTextBox" FontSize="14" BorderThickness="0"/>
+                        <TextBlock IsHitTestVisible="False" Text="Search..." VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4,0,0,0" Foreground="DarkGray" FontSize="14">
                             <TextBlock.Style>
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -298,17 +299,25 @@
             <!-- Canvas Grid -->
             <Grid x:Name="computerGrid" Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="50"></RowDefinition>
+                    <RowDefinition Height="40"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" Background="#303030">
-                    
+                    <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal">
+                        <Button Width="100" Height="25" Margin="10,0,5,0" BorderThickness="0">
+                            <TextBlock>Add Subview</TextBlock>
+                        </Button>
+                        <Button Width="100" Height="25" Margin="5,0,5,0" BorderThickness="0">
+                            <TextBlock>Add Computer</TextBlock>
+                        </Button>
+                    </StackPanel>
                 </Grid>
                 
                 <Grid Grid.Row="1">
                     <Rectangle Fill="#474747" Panel.ZIndex="0"></Rectangle>
-                    <TextBlock x:Name="CurrentViewName" Height="50" IsHitTestVisible="False" VerticalAlignment="Top" Text="CurrentViewName" FontSize="24" Foreground="White" Panel.ZIndex="0" TextAlignment="Center" Padding="0,10,0,0"></TextBlock>
+                    <TextBlock x:Name="CurrentViewName" Height="50" IsHitTestVisible="False" VerticalAlignment="Top" Text="" FontSize="24" Foreground="White" Panel.ZIndex="0" TextAlignment="Center" Padding="0,10,0,0"></TextBlock>
+                    <TextBlock x:Name="Info" Height="50" IsHitTestVisible="False" VerticalAlignment="Center" Text="" FontSize="20" Foreground="White" Panel.ZIndex="0" TextAlignment="Center" Padding="0,10,0,0"></TextBlock>
                     <Canvas x:Name="ViewCanvas" x:FieldModifier="public" Panel.ZIndex="1"/>
                 </Grid>
             </Grid>

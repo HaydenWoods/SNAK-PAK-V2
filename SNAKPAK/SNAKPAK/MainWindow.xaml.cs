@@ -77,6 +77,8 @@ namespace SNAKPAK {
         }
         private ViewUI _CurrentView;
 
+        public string CurrentFilePath;
+
         public static MainWindow mw;
         public static ActiveDirectory activeDir;
 
@@ -135,16 +137,26 @@ namespace SNAKPAK {
                 }
             }
 
-            public View[] SaveSubViews(View parentView) {
-                View[] views = new View[subViewsCount];
+            public List<View> SaveSubViews(View parentView) {
+                List<View> views = new List<View>();
                 
                 for (int i = 0; i < children.Count; i++) {
                     if (children[i].GetType() == typeof(ViewUI)) {
                         ViewUI child = (ViewUI)children[i];
 
                         View view = new View();
-                        view.ViewName = name;
-                        view.Subviews.Add(child.SaveSubViews(view));
+                        view.ViewName = child.name;
+                        view.Subviews.AddRange(child.SaveSubViews(view));
+
+                        views.Add(view);
+                    }
+                    if (children[i].GetType() == typeof(ComputerUI)) {
+                        ComputerUI child = (ComputerUI)children[i];
+
+                        Computer computer = new Computer();
+                        computer.ComputerName = child.name;
+
+                        parentView.Computers.Add(computer);
                     }
                 }
 
@@ -165,8 +177,8 @@ namespace SNAKPAK {
                 DirectorySearcher search = new DirectorySearcher(dir);
                 search.Filter = "(objectClass=Computer)";
 
-                SearchResult searchResults = search.FindOne();
-                return searchResults;
+                SearchResult searchResult = search.FindOne();
+                return searchResult;
             }
             public SearchResultCollection SearchDirAll() {
                 DirectorySearcher search = new DirectorySearcher(dir);
@@ -177,7 +189,7 @@ namespace SNAKPAK {
             }
 
             DirectoryEntry LoadActiveDir() {
-                DirectoryEntry dir = new DirectoryEntry("WinNT:");
+                DirectoryEntry dir = new DirectoryEntry("LDAP://jsracs.wa.edu.au", "stwooh", "258963147Qwerty!");
                 return dir;
             }
 
@@ -186,7 +198,7 @@ namespace SNAKPAK {
             }
         }
         
-        //AD UI
+        //Active Directory UI
         public void DisplayADResults(SearchResultCollection searchResults) {
             for (int i = 0; i < searchResults.Count; i++) {
                 try {
@@ -262,6 +274,7 @@ namespace SNAKPAK {
         //Canvas 
         void ClearCanvas() {
             ViewCanvas.Children.Clear();
+            CurrentViewName.Text = "";
         }
         void DrawCanvas() {
             ClearCanvas();
@@ -316,19 +329,64 @@ namespace SNAKPAK {
         }
 
         //Menu item functionality
-        View LoadFile(string fileName) {
+        void OpenFile() {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                MasterView = new ViewUI(LoadFile(openFileDialog.FileName));
+                CurrentView = MasterView;
+            }
+        }
+
+        View LoadFile(string filepath) {
+            CloseFile();
             View view;
-            using (var input = File.OpenRead(fileName)) {
+            using (var input = File.OpenRead(filepath)) {
                 view = View.Parser.ParseFrom(input);
             }
-            Debug.WriteLine(view);
+            CurrentFilePath = filepath;
             return view;   
         }
 
-        void SaveFile(string fileName) {
-            View view = new View();
-            view.ViewName = MasterView.name;
-            view.Subviews.Add(MasterView.SaveSubViews(view));
+        void SaveFile(string filename) {
+            if (MasterView != null) {
+                View view = new View();
+                view.ViewName = MasterView.name;
+                view.Subviews.Add(MasterView.SaveSubViews(view));
+                using (var output = File.Create(filename))
+                {
+                    view.WriteTo(output);
+                }
+            }
+        }
+
+        void SaveFileAs() {
+            if (MasterView != null) {
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    SaveFile(saveFileDialog.FileName);
+                }
+            }
+        }
+
+        void CloseFile() {
+            if (MasterView != null) {
+                MessageBoxResult result = MessageBox.Show("Would you like to save changes to the document?", "Save Changes", MessageBoxButton.YesNoCancel);
+                switch (result) {
+                    case MessageBoxResult.Yes:
+                        SaveFileAs();
+                        ClearCanvas();
+                        break;
+                    case MessageBoxResult.No:
+                        ClearCanvas();
+                        break;
+                    case MessageBoxResult.Cancel:
+                        break;
+                }
+            }
         }
 
         public void DeleteElement(object sender, RoutedEventArgs e) {
@@ -346,20 +404,19 @@ namespace SNAKPAK {
         private void MenuItem_Click(object sender, RoutedEventArgs e) {
             MenuItem source = e.Source as MenuItem;
             switch (source.Name) {
+                case "New":
+                    break;
                 case "Open":
-                    OpenFileDialog openFileDialog = new OpenFileDialog();
-                    openFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
-                    if (openFileDialog.ShowDialog() == true) {
-                        MasterView = new ViewUI(LoadFile(openFileDialog.FileName));
-                        CurrentView = MasterView;
-                    }
+                    OpenFile();
                     break;
                 case "Save":
-                    SaveFileDialog saveFileDialog = new SaveFileDialog();
-                    saveFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
-                    if (saveFileDialog.ShowDialog() == true) {
-                        SaveFile(saveFileDialog.FileName);
-                    }
+                    SaveFile(CurrentFilePath);
+                    break;
+                case "SaveAs":
+                    SaveFileAs();
+                    break;
+                case "Close":
+                    CloseFile();
                     break;
                 default:
                     break;
