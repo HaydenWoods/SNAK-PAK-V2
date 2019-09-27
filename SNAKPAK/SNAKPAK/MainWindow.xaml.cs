@@ -501,11 +501,11 @@ namespace SNAKPAK {
             }
         }
 
-        public void CreateUISubview(object sender, RoutedEventArgs e) {
+        public void CreateUISubview(string name) {
             if (CurrentView != null && MasterView != null) {
-                string name = SubViewNameInput.Text;
                 if (name != null && name != "") {
                     ViewUI view = new ViewUI(name);
+                    view.parent = CurrentView;
                     CurrentView.children.Add(view);
                     DrawCanvas();
                 }      
@@ -562,6 +562,12 @@ namespace SNAKPAK {
 
         public void PreviousSubview(object sender, RoutedEventArgs e) {
             CurrentView = (ViewUI)CurrentView.parent;
+        }
+
+        void OpenNewSubviewWindow(object sender, RoutedEventArgs e) {
+            NewSubview win = new NewSubview();
+            win.Owner = this;
+            win.Show();
         }
 
         void OnPageLoad(object sender, RoutedEventArgs e) {

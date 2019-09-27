@@ -84,3 +84,5 @@ C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\S
 C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.csproj.CopyComplete
 C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.exe
 C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\SNAKPAK.pdb
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewSubview.g.cs
+C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewSubview.baml
