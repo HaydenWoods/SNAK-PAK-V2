@@ -25,11 +25,11 @@ namespace SNAKPAK {
 
             for (int i = 0; i < r.Next(1, 6); i++) {
                 View subView = new View();
-                subView.Name = parentView.Name + " - SubView(" + i + ")";
+                subView.Name = parentView.Name + " " + i;
 
                 for (int j = 0; j < r.Next(1, 10); j++) {
                     Computer computer = new Computer();
-                    computer.Name = subView.Name + " - Computer (" + j + ")";
+                    computer.Name = "Computer " + j;
                     subView.Computers.Add(computer);
                 }
 
@@ -113,7 +113,7 @@ namespace SNAKPAK {
          \_____\____/|_|  |_|_|     \____/   |_|  |______|_|  \_\  \____/|_____|                                                               
         */
         public class ComputerUI : CanvasElement {
-            public string hostName;
+            public string hostname;
 
             public ComputerUI(Computer computer) {
                 if (computer.Name != null && computer.Name != "") {
@@ -121,7 +121,12 @@ namespace SNAKPAK {
                 } else {
                     name = computer.HostName;
                 }
-                hostName = computer.HostName;
+                hostname = computer.HostName;
+            }
+
+            public ComputerUI(string _name, string _hostname) {
+                name = _name;
+                hostname = _hostname;
             }
         }
 
@@ -221,7 +226,7 @@ namespace SNAKPAK {
             }
 
             DirectoryEntry LoadActiveDir() {
-                DirectoryEntry dir = new DirectoryEntry("LDAP://jsracs.wa.edu.au", "stwooh", "258963147Qwerty!");
+                DirectoryEntry dir = new DirectoryEntry("LDAP://jsracs.wa.edu.au");
                 return dir;
             }
 
@@ -335,9 +340,14 @@ namespace SNAKPAK {
                 Rectangle rect = new Rectangle();
                 rect.Width = 120;
                 rect.Height = 50;
-                rect.Fill = Brushes.Beige;
                 rect.Stroke = Brushes.Black;
                 rect.StrokeThickness = 1;
+
+                if (element.GetType() == typeof(ViewUI)) {
+                    rect.Fill = Brushes.Beige;
+                } else if (element.GetType() == typeof(ComputerUI)) {
+                    rect.Fill = Brushes.AliceBlue;
+                }
 
                 //Text
                 Border border = new Border();
@@ -396,18 +406,18 @@ namespace SNAKPAK {
         }
 
         //Menu item functionality
-        void NewFile() {
+        void NewFile(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView == null && CurrentFilePath == null && CurrentView == null) {
                 MasterView = new ViewUI("Master View");
                 CurrentView = MasterView;
             } else {
-                CloseFile();
-                NewFile();
+                CloseFile(sender, e);
+                NewFile(sender, e);
             }
         }
 
-        void OpenFile() {
-            CloseFile();
+        void OpenFile(object sender, ExecutedRoutedEventArgs e) {
+            CloseFile(sender, e);
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "SnakPak Files (*.snak)|*.snak";
             if (openFileDialog.ShowDialog() == true) {
@@ -424,43 +434,42 @@ namespace SNAKPAK {
             return view;   
         }
 
-        void SaveFile(string filename) {
+        void SaveFile(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView != null && CurrentFilePath != null) {
                 View view = new View();
                 view.Name = MasterView.name;
                 view.PosX = MasterView.posX;
                 view.PosY = MasterView.posY;
                 view.Subviews.Add(MasterView.SaveSubViews(view));
-                using (var output = File.Create(filename))
+                using (var output = File.Create(CurrentFilePath))
                 {
                     view.WriteTo(output);
                 }
             } else if (CurrentFilePath == null) {
-                SaveFileAs();
+                SaveFileAs(sender, e);
             }
         }
 
-        void SaveFileAs() {
+        void SaveFileAs(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView != null) {
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "SnakPak Files (*.snak)|*.snak";
-                if (saveFileDialog.ShowDialog() == true)
-                {
+                if (saveFileDialog.ShowDialog() == true) {
                     CurrentFilePath = saveFileDialog.FileName;
-                    SaveFile(CurrentFilePath);
+                    SaveFile(sender, e);
                 }
             }
         }
 
-        void CloseFile() {
+        void CloseFile(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView != null) {
                 MessageBoxResult result = MessageBox.Show("Would you like to save changes to the document?", "Save Changes", MessageBoxButton.YesNoCancel);
                 switch (result) {
                     case MessageBoxResult.Yes:
                         if (CurrentFilePath != null) {
-                            SaveFile(CurrentFilePath);
+                            SaveFile(sender, e);
                         } else if (CurrentFilePath == null) {
-                            SaveFileAs();
+                            SaveFileAs(sender, e);
                         }
                         ClearCanvas();
                         break;
@@ -476,31 +485,6 @@ namespace SNAKPAK {
             }
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem source = e.Source as MenuItem;
-            switch (source.Name)
-            {
-                case "New":
-                    NewFile();
-                    break;
-                case "Open":
-                    OpenFile();
-                    break;
-                case "Save":
-                    SaveFile(CurrentFilePath);
-                    break;
-                case "SaveAs":
-                    SaveFileAs();
-                    break;
-                case "Close":
-                    CloseFile();
-                    break;
-                default:
-                    break;
-            }
-        }
-
         public void CreateUISubview(string name) {
             if (CurrentView != null && MasterView != null) {
                 if (name != null && name != "") {
@@ -512,6 +496,17 @@ namespace SNAKPAK {
             }
         }
 
+        public void CreateUIComputer(string name, string hostname) {
+            if (CurrentView != null && MasterView != null) {
+                if (name != null && name != "" && hostname != null && hostname != "") {
+                    ComputerUI computer = new ComputerUI(name, hostname);
+                    computer.parent = CurrentView;
+                    CurrentView.children.Add(computer);
+                    DrawCanvas();
+                }
+            }
+        }
+
         public CanvasElement FindCanvasElementFromID(ViewUI view, int id) {
             for (int i = 0; i < view.children.Count; i++) {
                 CanvasElement child = (CanvasElement)CurrentView.children[i];
@@ -519,7 +514,7 @@ namespace SNAKPAK {
                     return child;
                 }
             }
-            return null;
+            return null;    
         }
 
         public void DeleteUIElement(object sender, RoutedEventArgs e) {
@@ -561,13 +556,27 @@ namespace SNAKPAK {
         }
 
         public void PreviousSubview(object sender, RoutedEventArgs e) {
-            CurrentView = (ViewUI)CurrentView.parent;
+            if (CurrentView != null) {
+                if (CurrentView.parent != null) {
+                    CurrentView = (ViewUI)CurrentView.parent;
+                }
+            }
         }
 
         void OpenNewSubviewWindow(object sender, RoutedEventArgs e) {
             NewSubview win = new NewSubview();
             win.Owner = this;
             win.Show();
+        }
+        void OpenNewComputerWindow(object sender, RoutedEventArgs e) {
+            NewComputer win = new NewComputer();
+            win.Owner = this;
+            win.Show();
+        }
+
+        void CurrentViewName_TextChanged(object sender, TextChangedEventArgs e) {
+            TextBox source = e.Source as TextBox;
+            CurrentView.name = source.Text;
         }
 
         void OnPageLoad(object sender, RoutedEventArgs e) {
@@ -585,7 +594,7 @@ namespace SNAKPAK {
 
         private void SaveTimer(object sender, EventArgs e) {
             if (CurrentFilePath != null && MasterView != null) {
-                SaveFile(CurrentFilePath);
+                SaveFile(sender, (ExecutedRoutedEventArgs)e);
             }
         }
     }

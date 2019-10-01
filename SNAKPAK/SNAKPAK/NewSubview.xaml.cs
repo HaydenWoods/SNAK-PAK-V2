@@ -24,7 +24,6 @@ namespace SNAKPAK {
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) {
-            Debug.WriteLine("yes");
             Button source = e.Source as Button;
             switch (source.Name) {
                 case "Create":
