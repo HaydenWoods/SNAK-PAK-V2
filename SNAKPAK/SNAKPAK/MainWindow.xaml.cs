@@ -11,9 +11,9 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Collections;
 using System.IO;
 using Google.Protobuf;
-using static View.Types;
+using static View;
 using Microsoft.Win32;
-using Microsoft.VisualBasic;
+using System.Windows.Threading;
 
 namespace SNAKPAK {
     public static class ExtensionMethods {
@@ -25,11 +25,11 @@ namespace SNAKPAK {
 
             for (int i = 0; i < r.Next(1, 6); i++) {
                 View subView = new View();
-                subView.ViewName = parentView.ViewName + " - SubView(" + i + ")";
+                subView.Name = parentView.Name + " " + i;
 
                 for (int j = 0; j < r.Next(1, 10); j++) {
                     Computer computer = new Computer();
-                    computer.ComputerName = subView.ViewName + " - Computer (" + j + ")";
+                    computer.Name = "Computer " + j;
                     subView.Computers.Add(computer);
                 }
 
@@ -44,7 +44,7 @@ namespace SNAKPAK {
         public static void GenerateRandomFile(string fileName) {
             Random r = new Random();
             View masterView = new View();
-            masterView.ViewName = "Master View";
+            masterView.Name = "Master View";
 
             GenerateRandomViews(masterView, 0, r.Next(3, 10));
 
@@ -70,26 +70,13 @@ namespace SNAKPAK {
                 return _CurrentView;
             }
             set {
-                PreviousView = _CurrentView;
                 _CurrentView = value;
                 if (_CurrentView != null) {
                     DrawCanvas();
-                } else if (_CurrentView == null) {
-                    PreviousView = null;
                 }
             }
         }
         private ViewUI _CurrentView;
-
-        public ViewUI PreviousView {
-            get {
-                return _PreviousView;
-            }
-            set {
-                _PreviousView = value;
-            }
-        }
-        private ViewUI _PreviousView;
 
         public string CurrentFilePath;
 
@@ -106,7 +93,15 @@ namespace SNAKPAK {
         */
         public class CanvasElement {
             public int id;
-            public string name;   
+            public string name;
+            public CanvasElement parent;
+            public int posX;
+            public int posY;
+            public int posZ;
+
+            internal object TransformToVisual(object root) {
+                throw new NotImplementedException();
+            }
         }
 
         /*
@@ -118,8 +113,20 @@ namespace SNAKPAK {
          \_____\____/|_|  |_|_|     \____/   |_|  |______|_|  \_\  \____/|_____|                                                               
         */
         public class ComputerUI : CanvasElement {
+            public string hostname;
+
             public ComputerUI(Computer computer) {
-                name = computer.ComputerName;
+                if (computer.Name != null && computer.Name != "") {
+                    name = computer.Name;
+                } else {
+                    name = computer.HostName;
+                }
+                hostname = computer.HostName;
+            }
+
+            public ComputerUI(string _name, string _hostname) {
+                name = _name;
+                hostname = _hostname;
             }
         }
 
@@ -134,20 +141,23 @@ namespace SNAKPAK {
         */
         public class ViewUI : CanvasElement {
             public List<Object> children = new List<Object>();
-            int subViewsCount;
-            int computerCount;
-            
-            //Called on object construction
-            public void LoadSubViews(View parentView) {
-                for (int i = 0; i < parentView.Subviews.Count; i++) {
-                    ViewUI subView = new ViewUI(parentView.Subviews[i]);
+
+            public void LoadSubViews(View view) {
+                for (int i = 0; i < view.Subviews.Count; i++) {
+                    View child = (View)view.Subviews[i];
+
+                    ViewUI subView = new ViewUI(child);
+
+                    subView.parent = this;
                     children.Add(subView);
-                    subViewsCount++;
                 }
-                for (int i = 0; i < parentView.Computers.Count; i++) {
-                    ComputerUI computer = new ComputerUI(parentView.Computers[i]);
+                for (int i = 0; i < view.Computers.Count; i++) {
+                    Computer child = (Computer)view.Computers[i];
+
+                    ComputerUI computer = new ComputerUI(child);
+
+                    computer.parent = this;
                     children.Add(computer);
-                    computerCount++;
                 }
             }
 
@@ -159,7 +169,10 @@ namespace SNAKPAK {
                         ViewUI child = (ViewUI)children[i];
 
                         View view = new View();
-                        view.ViewName = child.name;
+                        view.Name = child.name;
+                        view.PosX = child.posX;
+                        view.PosY = child.posY;
+                        view.PosZ = child.posZ;
                         view.Subviews.AddRange(child.SaveSubViews(view));
 
                         views.Add(view);
@@ -168,7 +181,10 @@ namespace SNAKPAK {
                         ComputerUI child = (ComputerUI)children[i];
 
                         Computer computer = new Computer();
-                        computer.ComputerName = child.name;
+                        computer.Name = child.name;
+                        computer.PosX = child.posX;
+                        computer.PosY = child.posY;
+                        computer.PosZ = child.posZ;
 
                         parentView.Computers.Add(computer);
                     }
@@ -181,9 +197,12 @@ namespace SNAKPAK {
                 name = _name;
             }
 
-            public ViewUI(View parentView) {
-                name = parentView.ViewName;
-                LoadSubViews(parentView);
+            public ViewUI(View view) {
+                name = view.Name;
+                posX = view.PosX;
+                posY = view.PosY;
+                posZ = view.PosZ;
+                LoadSubViews(view);
             }
         }
 
@@ -207,7 +226,7 @@ namespace SNAKPAK {
             }
 
             DirectoryEntry LoadActiveDir() {
-                DirectoryEntry dir = new DirectoryEntry("LDAP://jsracs.wa.edu.au", "stwooh", "258963147Qwerty!");
+                DirectoryEntry dir = new DirectoryEntry("LDAP://jsracs.wa.edu.au");
                 return dir;
             }
 
@@ -233,7 +252,7 @@ namespace SNAKPAK {
         //General UI
         public static Nullable<Point> dragStart = null;
         new void MouseDown(object mouseSender, MouseButtonEventArgs args) {
-            var element = (FrameworkElement)mouseSender;
+            FrameworkElement element = (FrameworkElement)mouseSender;
             if (args.ClickCount == 2) {
                 for (int i = 0; i < CurrentView.children.Count; i++) {
                     if (CurrentView.children[i].GetType() == typeof(ViewUI)) {
@@ -249,12 +268,12 @@ namespace SNAKPAK {
             }
         }
         new void MouseUp(object mouseSender, MouseButtonEventArgs args) {
-            var element = (FrameworkElement)mouseSender;
+            FrameworkElement element = (FrameworkElement)mouseSender;
             dragStart = null;
             element.ReleaseMouseCapture();
         }
         new void MouseMove(object mouseSender, MouseEventArgs args) {
-            var element = (FrameworkElement)mouseSender;
+            FrameworkElement element = (FrameworkElement)mouseSender;
             if (dragStart != null && args.LeftButton == MouseButtonState.Pressed) {
                 var p2 = args.GetPosition(mw.ViewCanvas);
 
@@ -281,6 +300,11 @@ namespace SNAKPAK {
 
                     Canvas.SetTop(element, newY);
                 }
+
+                CanvasElement cElement = FindCanvasElementFromID(CurrentView, element.GetHashCode());
+                Point pos = element.TranslatePoint(new Point(0.0, 0.0), ViewCanvas);
+                cElement.posX = (int)pos.X;
+                cElement.posY = (int)pos.Y;
             }
         }
         void EnableDrag(UIElement element) {
@@ -301,24 +325,35 @@ namespace SNAKPAK {
                 Button Display = new Button();
                 Display.Style = mw.Resources["TransparentStyle"] as Style;
 
+                //Give the Canvas Element an ID that links to the Display Element
+                CanvasElement element = (CanvasElement)CurrentView.children[i];
+                element.id = Display.GetHashCode();
+
+                Canvas.SetTop(Display, element.posY);
+                Canvas.SetLeft(Display, element.posX);
+                Canvas.SetZIndex(Display, element.posZ);
+
                 //Containg grid inside of the button
                 Grid grid = new Grid();
 
                 //Drawn representation of the item
-                Rectangle display = new Rectangle();
-                display.Width = 120;
-                display.Height = 50;
-                display.Fill = Brushes.Beige;
-                display.Stroke = Brushes.Black;
-                display.StrokeThickness = 1;
+                Rectangle rect = new Rectangle();
+                rect.Width = 120;
+                rect.Height = 50;
+                rect.Stroke = Brushes.Black;
+                rect.StrokeThickness = 1;
+
+                if (element.GetType() == typeof(ViewUI)) {
+                    rect.Fill = Brushes.Beige;
+                } else if (element.GetType() == typeof(ComputerUI)) {
+                    rect.Fill = Brushes.AliceBlue;
+                }
 
                 //Text
                 Border border = new Border();
                 TextBlock text = new TextBlock();
-                CanvasElement child = (CanvasElement)CurrentView.children[i];
-                text.Text = child.name;
-                child.id = Display.GetHashCode();
-
+                
+                text.Text = element.name;
                 text.Width = 120;
                 text.FontSize = 14;
                 text.TextAlignment = TextAlignment.Center;
@@ -327,16 +362,40 @@ namespace SNAKPAK {
                 text.TextWrapping = TextWrapping.Wrap;
                 border.Child = text;
 
-                grid.Children.Add(display);
+                grid.Children.Add(rect);
                 grid.Children.Add(border);
 
                 //Right click menu
                 ContextMenu contextMenu = new ContextMenu();
-                MenuItem menuItem = new MenuItem();
-                menuItem.Header = "Delete";
-                menuItem.DataContext = child.id;
-                menuItem.Click += new RoutedEventHandler(DeleteUIElement);
-                contextMenu.Items.Add(menuItem);
+                List<Object> menuItems = new List<Object>();
+
+                //Delete
+                MenuItem deleteItem = new MenuItem();
+                deleteItem.Header = "Delete";
+                deleteItem.DataContext = element.id;
+                deleteItem.Click += new RoutedEventHandler(DeleteUIElement);
+                menuItems.Add(deleteItem);
+
+                menuItems.Add(new Separator());
+
+                //Bring to Front
+                MenuItem frontItem = new MenuItem();
+                frontItem.Header = "Bring to Front";
+                frontItem.DataContext = element.id;
+                frontItem.Click += new RoutedEventHandler(FrontUIElement);
+                menuItems.Add(frontItem);
+
+                //Send to Back
+                MenuItem backItem = new MenuItem();
+                backItem.Header = "Send to Back";
+                backItem.DataContext = element.id;
+                backItem.Click += new RoutedEventHandler(BackUIElement);
+                menuItems.Add(backItem);
+
+                //Add all to the context menu
+                for (int j = 0; j < menuItems.Count; j++) {
+                    contextMenu.Items.Add(menuItems[j]);
+                }
 
                 Display.Content = grid;
                 Display.ContextMenu = contextMenu;
@@ -347,20 +406,20 @@ namespace SNAKPAK {
         }
 
         //Menu item functionality
-        void NewFile() {
+        void NewFile(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView == null && CurrentFilePath == null && CurrentView == null) {
                 MasterView = new ViewUI("Master View");
                 CurrentView = MasterView;
             } else {
-                CloseFile();
-                NewFile();
+                CloseFile(sender, e);
+                NewFile(sender, e);
             }
         }
 
-        void OpenFile() {
-            CloseFile();
+        void OpenFile(object sender, ExecutedRoutedEventArgs e) {
+            CloseFile(sender, e);
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
+            openFileDialog.Filter = "SnakPak Files (*.snak)|*.snak";
             if (openFileDialog.ShowDialog() == true) {
                 MasterView = new ViewUI(LoadFile(openFileDialog.FileName));
                 CurrentView = MasterView;
@@ -375,41 +434,42 @@ namespace SNAKPAK {
             return view;   
         }
 
-        void SaveFile(string filename) {
+        void SaveFile(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView != null && CurrentFilePath != null) {
                 View view = new View();
-                view.ViewName = MasterView.name;
+                view.Name = MasterView.name;
+                view.PosX = MasterView.posX;
+                view.PosY = MasterView.posY;
                 view.Subviews.Add(MasterView.SaveSubViews(view));
-                using (var output = File.Create(filename))
+                using (var output = File.Create(CurrentFilePath))
                 {
                     view.WriteTo(output);
                 }
             } else if (CurrentFilePath == null) {
-                SaveFileAs();
+                SaveFileAs(sender, e);
             }
         }
 
-        void SaveFileAs() {
+        void SaveFileAs(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView != null) {
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
-                saveFileDialog.Filter = "SnakPak Files (*.snak|*.snak";
-                if (saveFileDialog.ShowDialog() == true)
-                {
+                saveFileDialog.Filter = "SnakPak Files (*.snak)|*.snak";
+                if (saveFileDialog.ShowDialog() == true) {
                     CurrentFilePath = saveFileDialog.FileName;
-                    SaveFile(CurrentFilePath);
+                    SaveFile(sender, e);
                 }
             }
         }
 
-        void CloseFile() {
+        void CloseFile(object sender, ExecutedRoutedEventArgs e) {
             if (MasterView != null) {
                 MessageBoxResult result = MessageBox.Show("Would you like to save changes to the document?", "Save Changes", MessageBoxButton.YesNoCancel);
                 switch (result) {
                     case MessageBoxResult.Yes:
                         if (CurrentFilePath != null) {
-                            SaveFile(CurrentFilePath);
+                            SaveFile(sender, e);
                         } else if (CurrentFilePath == null) {
-                            SaveFileAs();
+                            SaveFileAs(sender, e);
                         }
                         ClearCanvas();
                         break;
@@ -425,65 +485,117 @@ namespace SNAKPAK {
             }
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem source = e.Source as MenuItem;
-            switch (source.Name)
-            {
-                case "New":
-                    NewFile();
-                    break;
-                case "Open":
-                    OpenFile();
-                    break;
-                case "Save":
-                    SaveFile(CurrentFilePath);
-                    break;
-                case "SaveAs":
-                    SaveFileAs();
-                    break;
-                case "Close":
-                    CloseFile();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        public void CreateUISubview(object sender, RoutedEventArgs e) {
+        public void CreateUISubview(string name) {
             if (CurrentView != null && MasterView != null) {
-                string name = SubViewNameInput.Text;
                 if (name != null && name != "") {
                     ViewUI view = new ViewUI(name);
+                    view.parent = CurrentView;
                     CurrentView.children.Add(view);
                     DrawCanvas();
                 }      
             }
         }
 
-        public void DeleteUIElement(object sender, RoutedEventArgs e) {
-            MenuItem source = e.Source as MenuItem;
-            for (int i = 0; i < CurrentView.children.Count; i++) {
-                CanvasElement child = (CanvasElement)CurrentView.children[i];
-                if (child.id == (int)source.DataContext) {
-                    CurrentView.children.RemoveAt(i);
+        public void CreateUIComputer(string name, string hostname) {
+            if (CurrentView != null && MasterView != null) {
+                if (name != null && name != "" && hostname != null && hostname != "") {
+                    ComputerUI computer = new ComputerUI(name, hostname);
+                    computer.parent = CurrentView;
+                    CurrentView.children.Add(computer);
                     DrawCanvas();
-                    return;
                 }
             }
         }
 
-        public void PreviousSubview(object sender, RoutedEventArgs e) {
-            CurrentView = PreviousView;
+        public CanvasElement FindCanvasElementFromID(ViewUI view, int id) {
+            for (int i = 0; i < view.children.Count; i++) {
+                CanvasElement child = (CanvasElement)CurrentView.children[i];
+                if (child.id == id) {
+                    return child;
+                }
+            }
+            return null;    
         }
 
-        
+        public void DeleteUIElement(object sender, RoutedEventArgs e) {
+            MenuItem source = e.Source as MenuItem;
+            CurrentView.children.Remove(FindCanvasElementFromID(CurrentView, (int)source.DataContext));
+            DrawCanvas();
+        }
+
+        public void FrontUIElement(object sender, RoutedEventArgs e) {
+            MenuItem source = e.Source as MenuItem;
+            CanvasElement cElement = FindCanvasElementFromID(CurrentView, (int)source.DataContext);
+
+            int maxZ = 0;
+            for (int i = 0; i < CurrentView.children.Count; i++) {
+                CanvasElement child = (CanvasElement)CurrentView.children[i];
+                if (child.posZ > maxZ) {
+                    maxZ = child.posZ;
+                }
+            }
+            cElement.posZ = maxZ + 1;
+
+            DrawCanvas();
+        }
+
+        public void BackUIElement(object sender, RoutedEventArgs e) {
+            MenuItem source = e.Source as MenuItem;
+            CanvasElement cElement = FindCanvasElementFromID(CurrentView, (int)source.DataContext);
+
+            int minZ = 0;
+            for (int i = 0; i < CurrentView.children.Count; i++) {
+                CanvasElement child = (CanvasElement)CurrentView.children[i];
+                if (child.posZ < minZ) {
+                    minZ = child.posZ;
+                }
+            }
+            cElement.posZ = minZ - 1;
+
+            DrawCanvas();
+        }
+
+        public void PreviousSubview(object sender, RoutedEventArgs e) {
+            if (CurrentView != null) {
+                if (CurrentView.parent != null) {
+                    CurrentView = (ViewUI)CurrentView.parent;
+                }
+            }
+        }
+
+        void OpenNewSubviewWindow(object sender, RoutedEventArgs e) {
+            NewSubview win = new NewSubview();
+            win.Owner = this;
+            win.Show();
+        }
+        void OpenNewComputerWindow(object sender, RoutedEventArgs e) {
+            NewComputer win = new NewComputer();
+            win.Owner = this;
+            win.Show();
+        }
+
+        void CurrentViewName_TextChanged(object sender, TextChangedEventArgs e) {
+            TextBox source = e.Source as TextBox;
+            CurrentView.name = source.Text;
+        }
 
         void OnPageLoad(object sender, RoutedEventArgs e) {
             mw = (MainWindow)Application.Current.MainWindow;
             activeDir = new ActiveDirectory();
             //DisplayADResults(activeDir.SearchDirAll());
-            //ExtensionMethods.GenerateRandomFile("test.snak");   
+            //ExtensionMethods.GenerateRandomFile("test.snak");
+
+            //Save Ticker
+            DispatcherTimer dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += SaveTimer;
+            dispatcherTimer.Interval = new TimeSpan(0,0,30);
+            dispatcherTimer.Start();
+        }
+
+        private void SaveTimer(object sender, EventArgs e) {
+            if (CurrentFilePath != null && MasterView != null) {
+                SaveFile(sender, (ExecutedRoutedEventArgs)e);
+            }
         }
     }
 }
