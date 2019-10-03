@@ -94,3 +94,13 @@ C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\MahApps.Metro.IconPa
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\MahApps.Metro.IconPacks.xml
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewComputer.g.cs
 C:\Users\Hayden\Documents\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewComputer.baml
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\ControlzEx.dll
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\MahApps.Metro.IconPacks.dll
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\ControlzEx.pdb
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\MahApps.Metro.IconPacks.pdb
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\bin\Debug\MahApps.Metro.IconPacks.xml
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewComputer.g.cs
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewSubview.g.cs
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewComputer.baml
+C:\Users\Hayden-LAP\Documents\Desktop\Github\SNAKPAK\SNAKPAK\SNAKPAK\obj\Debug\NewSubview.baml
