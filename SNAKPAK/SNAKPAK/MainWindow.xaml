@@ -231,6 +231,29 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="TopButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#303030"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Opacity" Value="0.8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3b3b3b"/>
+                    <Setter Property="Opacity" Value="1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Window.CommandBindings>
@@ -286,27 +309,36 @@
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <Border Padding="10,0,10,0">
-                    <Grid>
-                        <TextBox Width="430" Height="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Left" x:Name="SearchTermTextBox" FontSize="14" BorderThickness="0"/>
-                        <TextBlock IsHitTestVisible="False" Text="Search..." VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4,0,0,0" Foreground="DarkGray" FontSize="14">
-                            <TextBlock.Style>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>
-                </Border>
+                <!--
+                SEARCH BOX
+                <Grid>
+                    <TextBox Width="430" Height="25" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Left" x:Name="SearchTermTextBox" FontSize="14" BorderThickness="0"/>
+                    <TextBlock IsHitTestVisible="False" Text="Search..." VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4,0,0,0" Foreground="DarkGray" FontSize="14">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+                -->
+
+                <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal" Grid.Column="0">
+                    <Button Click="RefreshListingsUIElement" Style="{StaticResource TopButton}" ToolTip="Refresh Computers">
+                        <Grid>
+                            <iconPacks:PackIconMaterial Kind="Refresh" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#fff" Height="20" Width="20"/>
+                        </Grid>
+                    </Button>
+                </StackPanel>
 
                 <Border Padding="10,10,10,10" Grid.Row="1">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <TextBlock Name="ADResults" Foreground="White">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <TextBlock Name="ComputerListingsBox" Foreground="White">
 
                         </TextBlock>
                     </ScrollViewer>
@@ -325,32 +357,8 @@
                         <ColumnDefinition Width="auto"></ColumnDefinition>
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    
-                    <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal" Grid.Column="0">
-                        <StackPanel.Resources>
-                            <Style x:Key="TopButton" TargetType="{x:Type Button}">
-                                <Setter Property="Background" Value="#303030"/>
-                                <Setter Property="Margin" Value="0,0,0,0"/>
-                                <Setter Property="Width" Value="40"/>
-                                <Setter Property="Height" Value="40"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="{x:Type Button}">
-                                            <Border Background="{TemplateBinding Background}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#3b3b3b"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Resources>
 
+                    <StackPanel FlowDirection="LeftToRight" Orientation="Horizontal" Grid.Column="0">
                         <Button Click="PreviousSubview" Style="{StaticResource TopButton}" ToolTip="Previous Subview">
                             <Grid>
                                 <iconPacks:PackIconMaterial Kind="ArrowLeft" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#fff" Height="20" Width="20"/>

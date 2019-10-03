@@ -81,7 +81,7 @@ namespace SNAKPAK {
         public string CurrentFilePath;
 
         public static MainWindow mw;
-        public static ActiveDirectory activeDir;
+        public static ComputerListings cl;
 
         /*
           _____          _   ___      __      _____   ______ _      ______ __  __ ______ _   _ _______ 
@@ -206,47 +206,41 @@ namespace SNAKPAK {
             }
         }
 
-        //Active Directory
-        public class ActiveDirectory {
-            public DirectoryEntry dir;
+        //
+        //Computer Listings
+        //
+        public class ComputerListings {
+            public List<DirectoryEntry> results = new List<DirectoryEntry>();
 
-            public SearchResult SearchDirSingle() {
-                DirectorySearcher search = new DirectorySearcher(dir);
-                search.Filter = "(objectClass=Computer)";
+            public void LocalNetworkResults() {
+                DirectoryEntry root = new DirectoryEntry("WinNT:");
 
-                SearchResult searchResult = search.FindOne();
-                return searchResult;
-            }
-            public SearchResultCollection SearchDirAll() {
-                DirectorySearcher search = new DirectorySearcher(dir);
-                search.Filter = "(objectClass=Computer)";
-
-                SearchResultCollection searchResults = search.FindAll();
-                return searchResults;
-            }
-
-            DirectoryEntry LoadActiveDir() {
-                DirectoryEntry dir = new DirectoryEntry("LDAP://jsracs.wa.edu.au");
-                return dir;
-            }
-
-            public ActiveDirectory() {
-                dir = LoadActiveDir();
-            }
-        }
-        
-        //Active Directory UI
-        public void DisplayADResults(SearchResultCollection searchResults) {
-            for (int i = 0; i < searchResults.Count; i++) {
-                try {
-                    SearchResult searchResult = searchResults[i];
-                    ADResults.Text += searchResult.GetDirectoryEntry().Properties["name"].Value.ToString() + " - ";
-                    ADResults.Text += searchResult.GetDirectoryEntry().Properties["dnshostname"].Value.ToString();
-                    ADResults.Text += "\n";
-                } catch {
-                    Debug.WriteLine("error");
+                foreach (DirectoryEntry container in root.Children) {
+                    foreach (DirectoryEntry result in container.Children) {
+                        /*
+                        if (result.SchemaClassName == "Computer") {
+                            results.Add(result);
+                        }
+                        */
+                        Debug.WriteLine(result.Properties["Name"]);
+                    }
                 }
-            }      
+            }
+
+            public void ClearListings() {
+                mw.ComputerListingsBox.Text = "";
+            }
+
+            public void RefreshListings() {
+                ClearListings();
+                for (int i = 0; i < results.Count; i++) {
+                    
+                }
+            }
+
+            public ComputerListings() {
+                LocalNetworkResults();
+            }
         }
 
         //General UI
@@ -406,18 +400,18 @@ namespace SNAKPAK {
         }
 
         //Menu item functionality
-        void NewFile(object sender, ExecutedRoutedEventArgs e) {
+        void NewFile() {
             if (MasterView == null && CurrentFilePath == null && CurrentView == null) {
                 MasterView = new ViewUI("Master View");
                 CurrentView = MasterView;
             } else {
-                CloseFile(sender, e);
-                NewFile(sender, e);
+                CloseFile();
+                NewFile();
             }
         }
 
-        void OpenFile(object sender, ExecutedRoutedEventArgs e) {
-            CloseFile(sender, e);
+        void OpenFile() {
+            CloseFile();
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "SnakPak Files (*.snak)|*.snak";
             if (openFileDialog.ShowDialog() == true) {
@@ -434,7 +428,7 @@ namespace SNAKPAK {
             return view;   
         }
 
-        void SaveFile(object sender, ExecutedRoutedEventArgs e) {
+        void SaveFile() {
             if (MasterView != null && CurrentFilePath != null) {
                 View view = new View();
                 view.Name = MasterView.name;
@@ -446,30 +440,30 @@ namespace SNAKPAK {
                     view.WriteTo(output);
                 }
             } else if (CurrentFilePath == null) {
-                SaveFileAs(sender, e);
+                SaveFileAs();
             }
         }
 
-        void SaveFileAs(object sender, ExecutedRoutedEventArgs e) {
+        void SaveFileAs() {
             if (MasterView != null) {
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "SnakPak Files (*.snak)|*.snak";
                 if (saveFileDialog.ShowDialog() == true) {
                     CurrentFilePath = saveFileDialog.FileName;
-                    SaveFile(sender, e);
+                    SaveFile();
                 }
             }
         }
 
-        void CloseFile(object sender, ExecutedRoutedEventArgs e) {
+        void CloseFile() {
             if (MasterView != null) {
                 MessageBoxResult result = MessageBox.Show("Would you like to save changes to the document?", "Save Changes", MessageBoxButton.YesNoCancel);
                 switch (result) {
                     case MessageBoxResult.Yes:
                         if (CurrentFilePath != null) {
-                            SaveFile(sender, e);
+                            SaveFile();
                         } else if (CurrentFilePath == null) {
-                            SaveFileAs(sender, e);
+                            SaveFileAs();
                         }
                         ClearCanvas();
                         break;
@@ -555,6 +549,10 @@ namespace SNAKPAK {
             DrawCanvas();
         }
 
+        public void RefreshListingsUIElement(object sender, RoutedEventArgs e) {
+            cl.RefreshListings();
+        }
+
         public void PreviousSubview(object sender, RoutedEventArgs e) {
             if (CurrentView != null) {
                 if (CurrentView.parent != null) {
@@ -574,15 +572,9 @@ namespace SNAKPAK {
             win.Show();
         }
 
-        void CurrentViewName_TextChanged(object sender, TextChangedEventArgs e) {
-            TextBox source = e.Source as TextBox;
-            CurrentView.name = source.Text;
-        }
-
         void OnPageLoad(object sender, RoutedEventArgs e) {
             mw = (MainWindow)Application.Current.MainWindow;
-            activeDir = new ActiveDirectory();
-            //DisplayADResults(activeDir.SearchDirAll());
+            //cl = new ComputerListings();
             //ExtensionMethods.GenerateRandomFile("test.snak");
 
             //Save Ticker
@@ -594,7 +586,7 @@ namespace SNAKPAK {
 
         private void SaveTimer(object sender, EventArgs e) {
             if (CurrentFilePath != null && MasterView != null) {
-                SaveFile(sender, (ExecutedRoutedEventArgs)e);
+                SaveFile();
             }
         }
     }
