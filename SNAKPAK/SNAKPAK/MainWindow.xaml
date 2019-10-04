@@ -257,16 +257,16 @@
     </Window.Resources>
 
     <Window.CommandBindings>
-        <CommandBinding Command="New" Executed="NewFile"/>
-        <CommandBinding Command="Open" Executed="OpenFile"/>
-        <CommandBinding Command="Save" Executed="SaveFile"/>
-        <CommandBinding Command="SaveAs" Executed="SaveFileAs"/>
-        <CommandBinding Command="Close" Executed="CloseFile"/>
+        <CommandBinding Command="New" Executed="MenuBarClick"/>
+        <CommandBinding Command="Open" Executed="MenuBarClick"/>
+        <CommandBinding Command="Save" Executed="MenuBarClick"/>
+        <CommandBinding Command="SaveAs" Executed="MenuBarClick"/>
+        <CommandBinding Command="Close" Executed="MenuBarClick"/>
     </Window.CommandBindings>
     <Window.InputBindings>
-        <KeyBinding Key="N" Modifiers="Control" Command="New"/>
-        <KeyBinding Key="O" Modifiers="Control" Command="Open"/>
-        <KeyBinding Key="S" Modifiers="Control" Command="Save"/>
+        <KeyBinding Key="N" Modifiers="Control" Command="New" CommandParameter="New"/>
+        <KeyBinding Key="O" Modifiers="Control" Command="Open" CommandParameter="Open"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="Save" CommandParameter="Save"/>
     </Window.InputBindings>
 
     <!-- Main Grid -->
@@ -280,11 +280,11 @@
         <Grid Grid.Row="0">
             <Menu Grid.Row="0" Width="Auto" Background="#303030" Foreground="White" DockPanel.Dock="Top" Panel.ZIndex="1" VerticalAlignment="Top" BorderThickness="0">
                 <MenuItem Header="_File" HorizontalAlignment="Center" Height="20" Foreground="White" BorderBrush="{x:Null}" BorderThickness="0">
-                    <MenuItem Name="New" Header="_New" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="New"/>
-                    <MenuItem Name="Open" Header="_Open" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="Open"/>
-                    <MenuItem Name="Save" Header="_Save" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="Save"/>
-                    <MenuItem Name="SaveAs" Header="Save As" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="SaveAs"/>
-                    <MenuItem Name="Close" Header="_Close" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="Close"/>
+                    <MenuItem Name="New" Header="_New" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="New" CommandParameter="New"/>
+                    <MenuItem Name="Open" Header="_Open" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="Open" CommandParameter="Open"/>
+                    <MenuItem Name="Save" Header="_Save" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="Save" CommandParameter="Save"/>
+                    <MenuItem Name="SaveAs" Header="Save As" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="SaveAs" CommandParameter="SaveAs"/>
+                    <MenuItem Name="Close" Header="_Close" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="0" Command="Close" CommandParameter="Close"/>
                 </MenuItem>
                 <MenuItem  Header="_Edit" HorizontalAlignment="Center" Height="20">
 

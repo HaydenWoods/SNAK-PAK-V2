@@ -207,10 +207,10 @@ namespace SNAKPAK {
         }
 
         //
-        //Computer Listings
+        // Computer Listings
         //
         public class ComputerListings {
-            public List<DirectoryEntry> results = new List<DirectoryEntry>();
+            public List<string> results = new List<string>();
 
             public void LocalNetworkResults() {
                 DirectoryEntry root = new DirectoryEntry("WinNT:");
@@ -226,6 +226,33 @@ namespace SNAKPAK {
                     }
                 }
             }
+            
+            public void ADResults() {
+                using (DirectoryEntry entry = new DirectoryEntry("LDAP://", "stwooh", "258963147Qwerty!")) {
+                    using (DirectorySearcher mySearcher = new DirectorySearcher(entry)) {
+                        mySearcher.Filter = ("(objectClass=computer)");
+
+                        // No size limit, reads all objects
+                        mySearcher.SizeLimit = 0;
+
+                        // Read data in pages of 250 objects. Make sure this value is below the limit configured in your AD domain (if there is a limit)
+                        mySearcher.PageSize = 250;
+
+                        // Let searcher know which properties are going to be used, and only load those
+                        mySearcher.PropertiesToLoad.Add("name");
+
+                        foreach (SearchResult resEnt in mySearcher.FindAll())
+                        {
+                            // Note: Properties can contain multiple values.
+                            if (resEnt.Properties["name"].Count > 0)
+                            {
+                                string computerName = (string)resEnt.Properties["name"][0];
+                                results.Add(computerName);
+                            }
+                        }
+                    }
+                }
+            }
 
             public void ClearListings() {
                 mw.ComputerListingsBox.Text = "";
@@ -234,12 +261,13 @@ namespace SNAKPAK {
             public void RefreshListings() {
                 ClearListings();
                 for (int i = 0; i < results.Count; i++) {
-                    
+                    mw.ComputerListingsBox.Text += results[i] + "\n";
                 }
             }
 
             public ComputerListings() {
-                LocalNetworkResults();
+                //LocalNetworkResults();
+                ADResults();
             }
         }
 
@@ -479,6 +507,29 @@ namespace SNAKPAK {
             }
         }
 
+        public void MenuBarClick(object sender, ExecutedRoutedEventArgs e) {
+            Debug.WriteLine(e.Parameter);
+            switch (e.Parameter) {
+                case "New":
+                    NewFile();
+                    return;
+                case "Open":
+                    OpenFile();
+                    return;
+                case "Save":
+                    SaveFile();
+                    return;
+                case "SaveAs":
+                    SaveFileAs();
+                    return;
+                case "Close":
+                    CloseFile();
+                    return;
+                default:
+                    return;
+            }
+        }
+
         public void CreateUISubview(string name) {
             if (CurrentView != null && MasterView != null) {
                 if (name != null && name != "") {
@@ -574,7 +625,7 @@ namespace SNAKPAK {
 
         void OnPageLoad(object sender, RoutedEventArgs e) {
             mw = (MainWindow)Application.Current.MainWindow;
-            //cl = new ComputerListings();
+            cl = new ComputerListings();
             //ExtensionMethods.GenerateRandomFile("test.snak");
 
             //Save Ticker
