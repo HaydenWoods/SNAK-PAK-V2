@@ -6,15 +6,12 @@
     xmlns:local="clr-namespace:SNAKPAK"
     mc:Ignorable="d"
     Title="Add New Computer"
-    Height="190"
+    Height="250"
     Width="300"
-    MinHeight="10"
-    MinWidth="300"
     ResizeMode="NoResize"
     WindowStyle="None"
     ShowInTaskbar="False"
-    WindowStartupLocation="CenterOwner" 
-    FocusManager.FocusedElement="{Binding ElementName=leftMarginTextBox}">
+    WindowStartupLocation="CenterOwner">
     <Grid Background="#303030">
         <Border Margin="20,20,20,20">
             <Grid>

@@ -228,7 +228,7 @@ namespace SNAKPAK {
             }
             
             public void ADResults() {
-                using (DirectoryEntry entry = new DirectoryEntry("LDAP://", "stwooh", "258963147Qwerty!")) {
+                using (DirectoryEntry entry = new DirectoryEntry("LDAP://")) {
                     using (DirectorySearcher mySearcher = new DirectorySearcher(entry)) {
                         mySearcher.Filter = ("(objectClass=computer)");
 
@@ -267,7 +267,7 @@ namespace SNAKPAK {
 
             public ComputerListings() {
                 //LocalNetworkResults();
-                ADResults();
+                //ADResults();
             }
         }
 
@@ -508,7 +508,6 @@ namespace SNAKPAK {
         }
 
         public void MenuBarClick(object sender, ExecutedRoutedEventArgs e) {
-            Debug.WriteLine(e.Parameter);
             switch (e.Parameter) {
                 case "New":
                     NewFile();
@@ -531,24 +530,28 @@ namespace SNAKPAK {
         }
 
         public void CreateUISubview(string name) {
-            if (CurrentView != null && MasterView != null) {
-                if (name != null && name != "") {
-                    ViewUI view = new ViewUI(name);
-                    view.parent = CurrentView;
-                    CurrentView.children.Add(view);
-                    DrawCanvas();
-                }      
-            }
+            if (name != null && name != "") {
+                if (CurrentView == null && MasterView == null) {
+                    NewFile();
+                }
+
+                ViewUI view = new ViewUI(name);
+                view.parent = CurrentView;
+                CurrentView.children.Add(view);
+                DrawCanvas();
+            } 
         }
 
         public void CreateUIComputer(string name, string hostname) {
-            if (CurrentView != null && MasterView != null) {
-                if (name != null && name != "" && hostname != null && hostname != "") {
-                    ComputerUI computer = new ComputerUI(name, hostname);
-                    computer.parent = CurrentView;
-                    CurrentView.children.Add(computer);
-                    DrawCanvas();
+            if (name != null && name != "" && hostname != null && hostname != "") {
+                if (CurrentView == null && MasterView == null) {
+                    NewFile();
                 }
+
+                ComputerUI computer = new ComputerUI(name, hostname);
+                computer.parent = CurrentView;
+                CurrentView.children.Add(computer);
+                DrawCanvas();
             }
         }
 
@@ -619,6 +622,11 @@ namespace SNAKPAK {
         }
         void OpenNewComputerWindow(object sender, RoutedEventArgs e) {
             NewComputer win = new NewComputer();
+            win.Owner = this;
+            win.Show();
+        }
+        void OpenSettingsWindow(object sender, RoutedEventArgs e) {
+            Settings win = new Settings();
             win.Owner = this;
             win.Show();
         }
