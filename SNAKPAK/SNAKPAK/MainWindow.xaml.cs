@@ -206,68 +206,90 @@ namespace SNAKPAK {
             }
         }
 
-        //
-        // Computer Listings
-        //
-        public class ComputerListings {
-            public List<string> results = new List<string>();
+        public class ComputerListing {
+            public string name;
+            public string dnsHostName;
+            public string description;
 
-            public void LocalNetworkResults() {
-                DirectoryEntry root = new DirectoryEntry("WinNT:");
+            public Button ToUI() {
+                Button Display = new Button();
+                Display.Height = 30;
+                Display.Margin = new Thickness(0, 5, 0, 5);
 
-                foreach (DirectoryEntry container in root.Children) {
-                    foreach (DirectoryEntry result in container.Children) {
-                        /*
-                        if (result.SchemaClassName == "Computer") {
-                            results.Add(result);
-                        }
-                        */
-                        Debug.WriteLine(result.Properties["Name"]);
-                    }
-                }
+                TextBlock text = new TextBlock();
+                text.Text = name;
+                text.FontSize = 14;
+                text.TextAlignment = TextAlignment.Center;
+                text.Foreground = Brushes.Black;
+                text.VerticalAlignment = VerticalAlignment.Center;
+                text.TextWrapping = TextWrapping.Wrap;
+
+                Grid grid = new Grid();
+                grid.Children.Add(text);
+
+                Display.Content = grid;
+
+                return Display;
             }
+
+            public ComputerListing(string _name, string _dnsHostName, string _description) {
+                name = _name;
+                dnsHostName = _dnsHostName;
+                description = _description;
+            }
+        }
+
+        public class ComputerListings {
+            public List<ComputerListing> results = new List<ComputerListing>();
             
+            public string GetADProperty(SearchResult res, string name) {
+                try {
+                    return (string)res.Properties[name][0];
+                } catch {
+                    return "";
+                } 
+            }
+
             public void ADResults() {
-                using (DirectoryEntry entry = new DirectoryEntry("LDAP://")) {
-                    using (DirectorySearcher mySearcher = new DirectorySearcher(entry)) {
-                        mySearcher.Filter = ("(objectClass=computer)");
+                results.Clear();
+                using (DirectoryEntry entry = new DirectoryEntry("LDAP://jsracs.wa.edu.au")) {
+                    using (DirectorySearcher search = new DirectorySearcher(entry)) {
+                        search.Filter = ("(objectClass=computer)");
 
                         // No size limit, reads all objects
-                        mySearcher.SizeLimit = 0;
-
-                        // Read data in pages of 250 objects. Make sure this value is below the limit configured in your AD domain (if there is a limit)
-                        mySearcher.PageSize = 250;
+                        search.SizeLimit = 50;
 
                         // Let searcher know which properties are going to be used, and only load those
-                        mySearcher.PropertiesToLoad.Add("name");
+                        search.PropertiesToLoad.Add("Name");
+                        search.PropertiesToLoad.Add("DNSHostName");
+                        search.PropertiesToLoad.Add("Description");
 
-                        foreach (SearchResult resEnt in mySearcher.FindAll())
-                        {
+                        foreach (SearchResult res in search.FindAll()) {
                             // Note: Properties can contain multiple values.
-                            if (resEnt.Properties["name"].Count > 0)
-                            {
-                                string computerName = (string)resEnt.Properties["name"][0];
-                                results.Add(computerName);
-                            }
+                            string name = GetADProperty(res, "Name");
+                            string dnsHostName = GetADProperty(res, "DNSHostName");
+                            string description = GetADProperty(res, "Description");
+
+                            results.Add(new ComputerListing(name, dnsHostName, description));
                         }
+                        RefreshListings();
                     }
                 }
             }
 
             public void ClearListings() {
-                mw.ComputerListingsBox.Text = "";
+                mw.ComputerListingsBox.Children.Clear();
             }
 
             public void RefreshListings() {
                 ClearListings();
                 for (int i = 0; i < results.Count; i++) {
-                    mw.ComputerListingsBox.Text += results[i] + "\n";
+                    mw.ComputerListingsBox.Children.Add(results[i].ToUI());
                 }
             }
 
             public ComputerListings() {
-                //LocalNetworkResults();
-                //ADResults();
+                ADResults();
             }
         }
 
