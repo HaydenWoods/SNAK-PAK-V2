@@ -11,7 +11,6 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Collections;
 using System.IO;
 using Google.Protobuf;
-using static View;
 using Microsoft.Win32;
 using System.Windows.Threading;
 
@@ -206,30 +205,64 @@ namespace SNAKPAK {
             }
         }
 
+
+        /* 
+          _      _____  _____ _______ _____ _   _  _____  
+         | |    |_   _|/ ____|__   __|_   _| \ | |/ ____| 
+         | |      | | | (___    | |    | | |  \| | |  __  
+         | |      | |  \___ \   | |    | | | . ` | | |_ | 
+         | |____ _| |_ ____) |  | |   _| |_| |\  | |__| | 
+         |______|_____|_____/   |_|  |_____|_| \_|\_____| 
+
+        */
         public class ComputerListing {
             public string name;
             public string dnsHostName;
             public string description;
 
-            public Button ToUI() {
+            public Button ToUI(bool isFirst, bool isLast) {
+                Style listingButton = mw.FindResource("ListingButton") as Style;
+                Style topButton = mw.FindResource("TopButton") as Style;
+
                 Button Display = new Button();
-                Display.Height = 30;
-                Display.Margin = new Thickness(0, 5, 0, 5);
+                Display.Style = listingButton;
+                Display.Height = 40;
+                Display.Width = mw.ComputerListingsBox.ActualWidth - 18;
+                Display.Margin = new Thickness(0, 0, 0, isLast ? 3 : 10);
 
                 TextBlock text = new TextBlock();
                 text.Text = name;
-                text.FontSize = 14;
-                text.TextAlignment = TextAlignment.Center;
-                text.Foreground = Brushes.Black;
+                text.FontSize = 16;
+                text.TextAlignment = TextAlignment.Left;
+                text.Foreground = Brushes.White;
                 text.VerticalAlignment = VerticalAlignment.Center;
-                text.TextWrapping = TextWrapping.Wrap;
+                text.Margin = new Thickness(10, 0, 0, 0);
+                
+                Button add = new Button();
+                add.Style = topButton;
+                add.Height = 30;
+                add.Width = 30;
+                add.Margin = new Thickness(0, 0, 6, 0);
+                add.Background = Brushes.Black;
+                add.BorderBrush = Brushes.Transparent;
+                add.HorizontalAlignment = HorizontalAlignment.Right;
+                add.Click += ListingToComputer;
 
-                Grid grid = new Grid();
-                grid.Children.Add(text);
+                DockPanel dockPanel = new DockPanel();
+                dockPanel.Width = mw.ComputerListingsBox.ActualWidth - 18;
 
-                Display.Content = grid;
+                dockPanel.Children.Add(text);
+                DockPanel.SetDock(text, Dock.Left);
+                dockPanel.Children.Add(add);
+                DockPanel.SetDock(add, Dock.Right);
+
+                Display.Content = dockPanel;
 
                 return Display;
+            }
+
+            public void ListingToComputer(object sender, RoutedEventArgs e) {
+                mw.CreateUIComputer(name, dnsHostName);
             }
 
             public ComputerListing(string _name, string _dnsHostName, string _description) {
@@ -239,7 +272,18 @@ namespace SNAKPAK {
             }
         }
 
+
+        /*
+          _      _____  _____ _______ _____ _   _  _____  _____ 
+         | |    |_   _|/ ____|__   __|_   _| \ | |/ ____|/ ____|
+         | |      | | | (___    | |    | | |  \| | |  __| (___  
+         | |      | |  \___ \   | |    | | | . ` | | |_ |\___ \ 
+         | |____ _| |_ ____) |  | |   _| |_| |\  | |__| |____) |
+         |______|_____|_____/   |_|  |_____|_| \_|\_____|_____/ 
+         
+        */
         public class ComputerListings {
+            public List<ComputerListing> listing = new List<ComputerListing>();
             public List<ComputerListing> results = new List<ComputerListing>();
             
             public string GetADProperty(SearchResult res, string name) {
@@ -257,7 +301,7 @@ namespace SNAKPAK {
                         search.Filter = ("(objectClass=computer)");
 
                         // No size limit, reads all objects
-                        search.SizeLimit = 50;
+                        search.SizeLimit = 20;
 
                         // Let searcher know which properties are going to be used, and only load those
                         search.PropertiesToLoad.Add("Name");
@@ -279,13 +323,27 @@ namespace SNAKPAK {
 
             public void ClearListings() {
                 mw.ComputerListingsBox.Children.Clear();
+                mw.ComputerListingsBox.RowDefinitions.Clear();
             }
 
             public void RefreshListings() {
                 ClearListings();
                 for (int i = 0; i < results.Count; i++) {
-                    mw.ComputerListingsBox.Children.Add(results[i].ToUI());
+                    var isFirst = i == 0;
+                    var isLast = i == results.Count - 1;
+
+                    mw.ComputerListingsBox.RowDefinitions.Add(new RowDefinition());
+                    var display = results[i].ToUI(isFirst, isLast);
+                    mw.ComputerListingsBox.Children.Add(display);
+                    Grid.SetRow(display, mw.ComputerListingsBox.RowDefinitions.Count - 1);
                 }
+            }
+
+            public void OpenListings() {
+                
+            }
+            public void SaveListings() {
+                
             }
 
             public ComputerListings() {
@@ -549,7 +607,7 @@ namespace SNAKPAK {
                 default:
                     return;
             }
-        }
+        }      
 
         public void CreateUISubview(string name) {
             if (name != null && name != "") {

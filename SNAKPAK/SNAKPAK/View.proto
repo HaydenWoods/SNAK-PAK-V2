@@ -19,3 +19,8 @@ message View {
 	int32 posY = 5;
 	int32 posZ = 6;
 }
+
+message Listings {
+	string name = 1;
+	repeated Computer computers = 2;
+}

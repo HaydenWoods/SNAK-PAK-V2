@@ -3393,6 +3393,18 @@
             </para>
             </remarks>
         </member>
+        <member name="F:Google.Protobuf.Reflection.CustomOptions.Empty">
+            <summary>
+            Singleton for all descriptors with an empty set of options.
+            </summary>
+        </member>
+        <member name="F:Google.Protobuf.Reflection.CustomOptions.valuesByField">
+            <summary>
+            A sequence of values per field. This needs to be per field rather than per tag to allow correct deserialization
+            of repeated fields which could be "int, ByteString, int" - unlikely as that is. The fact that values are boxed
+            is unfortunate; we might be able to use a struct instead, and we could combine uint and ulong values.
+            </summary>
+        </member>
         <member name="M:Google.Protobuf.Reflection.CustomOptions.TryGetBool(System.Int32,System.Boolean@)">
             <summary>
             Retrieves a Boolean value for the specified option field.
@@ -3526,6 +3538,24 @@
             <param name="field">The field to fetch the value for.</param>
             <param name="value">The output variable to populate.</param>
             <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Google.Protobuf.Reflection.CustomOptions.ReadOrSkipUnknownField(Google.Protobuf.CodedInputStream)">
+            <summary>
+            Reads an unknown field, either parsing it and storing it or skipping it.
+            </summary>
+            <remarks>
+            If the current set of options is empty and we manage to read a field, a new set of options
+            will be created and returned. Otherwise, the return value is <c>this</c>. This allows
+            us to start with a singleton empty set of options and just create new ones where necessary.
+            </remarks>
+            <param name="input">Input stream to read from. </param>
+            <returns>The resulting set of custom options, either <c>this</c> or a new set.</returns>
+        </member>
+        <member name="T:Google.Protobuf.Reflection.CustomOptions.FieldValue">
+            <summary>
+            All field values can be stored as a byte string or a 64-bit integer.
+            This struct avoids unnecessary boxing.
+            </summary>
         </member>
         <member name="T:Google.Protobuf.Reflection.DescriptorReflection">
             <summary>Holder for reflection information generated from google/protobuf/descriptor.proto</summary>
@@ -7287,7 +7317,7 @@
                  if (duration.seconds &lt; 0 &amp;&amp; duration.nanos > 0) {
                    duration.seconds += 1;
                    duration.nanos -= 1000000000;
-                 } else if (durations.seconds > 0 &amp;&amp; duration.nanos &lt; 0) {
+                 } else if (duration.seconds > 0 &amp;&amp; duration.nanos &lt; 0) {
                    duration.seconds -= 1;
                    duration.nanos += 1000000000;
                  }
