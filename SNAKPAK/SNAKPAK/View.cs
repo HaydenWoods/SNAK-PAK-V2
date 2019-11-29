@@ -26,12 +26,15 @@ public static partial class ViewReflection {
           "dE5hbWUYAiABKAkSDAoEcG9zWBgDIAEoBRIMCgRwb3NZGAQgASgFEgwKBHBv",
           "c1oYBSABKAUidQoEVmlldxIMCgRuYW1lGAEgASgJEhcKCHN1YnZpZXdzGAIg",
           "AygLMgUuVmlldxIcCgljb21wdXRlcnMYAyADKAsyCS5Db21wdXRlchIMCgRw",
-          "b3NYGAQgASgFEgwKBHBvc1kYBSABKAUSDAoEcG9zWhgGIAEoBWIGcHJvdG8z"));
+          "b3NYGAQgASgFEgwKBHBvc1kYBSABKAUSDAoEcG9zWhgGIAEoBSI2CghMaXN0",
+          "aW5ncxIMCgRuYW1lGAEgASgJEhwKCWNvbXB1dGVycxgCIAMoCzIJLkNvbXB1",
+          "dGVyYgZwcm90bzM="));
     descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
         new pbr::FileDescriptor[] { },
-        new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-          new pbr::GeneratedClrTypeInfo(typeof(global::Computer), global::Computer.Parser, new[]{ "Name", "HostName", "PosX", "PosY", "PosZ" }, null, null, null, null),
-          new pbr::GeneratedClrTypeInfo(typeof(global::View), global::View.Parser, new[]{ "Name", "Subviews", "Computers", "PosX", "PosY", "PosZ" }, null, null, null, null)
+        new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(typeof(global::Computer), global::Computer.Parser, new[]{ "Name", "HostName", "PosX", "PosY", "PosZ" }, null, null, null),
+          new pbr::GeneratedClrTypeInfo(typeof(global::View), global::View.Parser, new[]{ "Name", "Subviews", "Computers", "PosX", "PosY", "PosZ" }, null, null, null),
+          new pbr::GeneratedClrTypeInfo(typeof(global::Listings), global::Listings.Parser, new[]{ "Name", "Computers" }, null, null, null)
         }));
   }
   #endregion
@@ -524,6 +527,155 @@ public sealed partial class View : pb::IMessage<View> {
         }
         case 48: {
           PosZ = input.ReadInt32();
+          break;
+        }
+      }
+    }
+  }
+
+}
+
+public sealed partial class Listings : pb::IMessage<Listings> {
+  private static readonly pb::MessageParser<Listings> _parser = new pb::MessageParser<Listings>(() => new Listings());
+  private pb::UnknownFieldSet _unknownFields;
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public static pb::MessageParser<Listings> Parser { get { return _parser; } }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public static pbr::MessageDescriptor Descriptor {
+    get { return global::ViewReflection.Descriptor.MessageTypes[2]; }
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  pbr::MessageDescriptor pb::IMessage.Descriptor {
+    get { return Descriptor; }
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public Listings() {
+    OnConstruction();
+  }
+
+  partial void OnConstruction();
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public Listings(Listings other) : this() {
+    name_ = other.name_;
+    computers_ = other.computers_.Clone();
+    _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public Listings Clone() {
+    return new Listings(this);
+  }
+
+  /// <summary>Field number for the "name" field.</summary>
+  public const int NameFieldNumber = 1;
+  private string name_ = "";
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public string Name {
+    get { return name_; }
+    set {
+      name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+    }
+  }
+
+  /// <summary>Field number for the "computers" field.</summary>
+  public const int ComputersFieldNumber = 2;
+  private static readonly pb::FieldCodec<global::Computer> _repeated_computers_codec
+      = pb::FieldCodec.ForMessage(18, global::Computer.Parser);
+  private readonly pbc::RepeatedField<global::Computer> computers_ = new pbc::RepeatedField<global::Computer>();
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public pbc::RepeatedField<global::Computer> Computers {
+    get { return computers_; }
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public override bool Equals(object other) {
+    return Equals(other as Listings);
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public bool Equals(Listings other) {
+    if (ReferenceEquals(other, null)) {
+      return false;
+    }
+    if (ReferenceEquals(other, this)) {
+      return true;
+    }
+    if (Name != other.Name) return false;
+    if(!computers_.Equals(other.computers_)) return false;
+    return Equals(_unknownFields, other._unknownFields);
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public override int GetHashCode() {
+    int hash = 1;
+    if (Name.Length != 0) hash ^= Name.GetHashCode();
+    hash ^= computers_.GetHashCode();
+    if (_unknownFields != null) {
+      hash ^= _unknownFields.GetHashCode();
+    }
+    return hash;
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public override string ToString() {
+    return pb::JsonFormatter.ToDiagnosticString(this);
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public void WriteTo(pb::CodedOutputStream output) {
+    if (Name.Length != 0) {
+      output.WriteRawTag(10);
+      output.WriteString(Name);
+    }
+    computers_.WriteTo(output, _repeated_computers_codec);
+    if (_unknownFields != null) {
+      _unknownFields.WriteTo(output);
+    }
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public int CalculateSize() {
+    int size = 0;
+    if (Name.Length != 0) {
+      size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+    }
+    size += computers_.CalculateSize(_repeated_computers_codec);
+    if (_unknownFields != null) {
+      size += _unknownFields.CalculateSize();
+    }
+    return size;
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public void MergeFrom(Listings other) {
+    if (other == null) {
+      return;
+    }
+    if (other.Name.Length != 0) {
+      Name = other.Name;
+    }
+    computers_.Add(other.computers_);
+    _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  public void MergeFrom(pb::CodedInputStream input) {
+    uint tag;
+    while ((tag = input.ReadTag()) != 0) {
+      switch(tag) {
+        default:
+          _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+          break;
+        case 10: {
+          Name = input.ReadString();
+          break;
+        }
+        case 18: {
+          computers_.AddEntriesFrom(input, _repeated_computers_codec);
           break;
         }
       }

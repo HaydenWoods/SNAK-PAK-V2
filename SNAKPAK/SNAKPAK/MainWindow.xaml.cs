@@ -246,7 +246,7 @@ namespace SNAKPAK {
                 add.Background = Brushes.Black;
                 add.BorderBrush = Brushes.Transparent;
                 add.HorizontalAlignment = HorizontalAlignment.Right;
-                add.Click += ListingToComputer;
+                add.Click += ListingToUIComputer;
 
                 DockPanel dockPanel = new DockPanel();
                 dockPanel.Width = mw.ComputerListingsBox.ActualWidth - 18;
@@ -261,14 +261,24 @@ namespace SNAKPAK {
                 return Display;
             }
 
-            public void ListingToComputer(object sender, RoutedEventArgs e) {
+            public void ListingToUIComputer(object sender, RoutedEventArgs e) {
                 mw.CreateUIComputer(name, dnsHostName);
+            }
+            public Computer ListingToComputer() {
+                Computer computer = new Computer();
+                computer.Name = this.name;
+                computer.HostName = this.dnsHostName;
+                return computer;
             }
 
             public ComputerListing(string _name, string _dnsHostName, string _description) {
                 name = _name;
                 dnsHostName = _dnsHostName;
                 description = _description;
+            }
+            public ComputerListing(string _name, string _dnsHostName) {
+                name = _name;
+                dnsHostName = _dnsHostName;
             }
         }
 
@@ -283,7 +293,6 @@ namespace SNAKPAK {
          
         */
         public class ComputerListings {
-            public List<ComputerListing> listing = new List<ComputerListing>();
             public List<ComputerListing> results = new List<ComputerListing>();
             
             public string GetADProperty(SearchResult res, string name) {
@@ -301,7 +310,7 @@ namespace SNAKPAK {
                         search.Filter = ("(objectClass=computer)");
 
                         // No size limit, reads all objects
-                        search.SizeLimit = 20;
+                        search.SizeLimit = 0;
 
                         // Let searcher know which properties are going to be used, and only load those
                         search.PropertiesToLoad.Add("Name");
@@ -337,17 +346,44 @@ namespace SNAKPAK {
                     mw.ComputerListingsBox.Children.Add(display);
                     Grid.SetRow(display, mw.ComputerListingsBox.RowDefinitions.Count - 1);
                 }
+                SaveListings();
+            }
+
+            public ComputerListing ComputerToComputerListing(Computer computer) {
+                ComputerListing computerListing = new ComputerListing(computer.Name, computer.HostName);
+                return computerListing;
             }
 
             public void OpenListings() {
-                
+                Listings listings;
+                try {
+                    using (var input = File.OpenRead("listings/listings.pak")) {
+                        listings = Listings.Parser.ParseFrom(input);
+                    }
+                    for (int i = 0; i < listings.Computers.Count; i++) {
+                        results.Add(ComputerToComputerListing(listings.Computers[i]));
+                    }
+                } catch {
+                    ADResults();
+                }
+                RefreshListings();
             }
             public void SaveListings() {
-                
+                Listings listings = new Listings();
+                TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
+                int secondsSinceEpoch = (int)t.TotalSeconds;
+                listings.Name = "AD-" + secondsSinceEpoch;
+                for (int i = 0; i < results.Count; i++) {
+                    listings.Computers.Add(results[i].ListingToComputer());
+                }
+                Directory.CreateDirectory("listings");
+                using (var output = File.Create("listings/listings.pak")) {
+                    listings.WriteTo(output);
+                }
             }
 
             public ComputerListings() {
-                ADResults();
+                OpenListings();
             }
         }
 
